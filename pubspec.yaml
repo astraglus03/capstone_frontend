@@ -55,8 +55,12 @@ dependencies:
   permission_handler: ^11.3.1
   google_speech: ^5.2.0+1
   loading_indicator: ^3.1.1
-  flutter_ffmpeg: ^0.4.0
-  mongo_dart: ^0.10.2
+  dio: ^5.4.3+1
+  table_calendar: ^3.0.9
+  syncfusion_flutter_datepicker: ^25.1.42
+  ffmpeg_kit_flutter: ^6.0.3
+  flip_card: ^0.7.0
+  fl_chart: ^0.67.0
 
 
 

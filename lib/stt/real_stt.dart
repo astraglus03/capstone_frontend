@@ -1,26 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_speech/google_speech.dart';
-import 'package:loading_indicator/loading_indicator.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart' as audio_players;
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:http/http.dart' as http;
-import 'package:permission_handler/permission_handler.dart';
 
-
-class FinalStt extends StatefulWidget {
-  FinalStt({Key? key, this.title}) : super(key: key);
+class RealStt extends StatefulWidget {
+  RealStt({Key? key, this.title}) : super(key: key);
 
   final String? title;
 
   @override
-  _FinalSttState createState() => _FinalSttState();
+  _RealSttState createState() => _RealSttState();
 }
 
-class _FinalSttState extends State<FinalStt> {
+class _RealSttState extends State<RealStt> {
   bool is_Transcribing = false;
   String content = '';
 
@@ -29,11 +28,9 @@ class _FinalSttState extends State<FinalStt> {
       is_Transcribing = true;
     });
     final serviceAccount = ServiceAccount.fromString(
-        (await rootBundle.loadString('assets/stt-test-418715-4b9278f2d459.json'))); // json 파일
+        '${(await rootBundle.loadString('asset/stt-test-418715-4b9278f2d459.json'))}');
     final speechToText = SpeechToText.viaServiceAccount(serviceAccount);
-
     final config = RecognitionConfig(
-      //encoding: AudioEncoding.LINEAR16,
         encoding: AudioEncoding.LINEAR16,
         model: RecognitionModel.basic,
         enableAutomaticPunctuation: true,
@@ -43,20 +40,20 @@ class _FinalSttState extends State<FinalStt> {
 
     final audio = await _getAudioContent(audioPath);
     await speechToText.recognize(config, audio).then((value) {
-      setState(() {
-        content = value.results.map((e) => e.alternatives.first.transcript).join('\n');
-        print(content);
-      });
-
-
       if (value.results.isNotEmpty) {
         setState(() {
           content = value.results.map((e) => e.alternatives.first.transcript).join('\n');
-          print(content);
         });
       } else {
+        setState(() {
+          content = '음성 인식 결과가 없습니다. 다시 시도해주세요.';
+        });
         print('No results found');
       }
+    }).catchError((error) {
+      setState(() {
+        content = '음성 인식 중 오류가 발생했습니다: $error';
+      });
     }).whenComplete(() {
       setState(() {
         is_Transcribing = false;
@@ -65,14 +62,8 @@ class _FinalSttState extends State<FinalStt> {
     });
   }
 
-  Future<List<int>> _getAudioContent(filePath) async {
-    //final directory = await getApplicationDocumentsDirectory();
-    //final path = directory.path + '/$name';
-    // final path = 'asset/wav/check.mp3';
-    // return File(path).readAsBytesSync().toList();
-    // final ByteData data = await rootBundle.load(filePath);
-    // return data.buffer.asUint8List();
 
+  Future<List<int>> _getAudioContent(filePath) async {
     //로컬 디렉토리 파일을 넘겨주기 위해서는 이 방법을 해야함.
     File file = File(filePath);
     List<int> voiceData = await file.readAsBytes();
@@ -107,8 +98,8 @@ class _FinalSttState extends State<FinalStt> {
         isRecording = false;
       });
       await audioRecord.closeRecorder();
-      // String voiceText = await clovaSTT(audioPath);
-      // print(voiceText);
+
+      await transcribe();
     } catch (e) {
       print('Error Stopping record : $e');
     }
@@ -120,25 +111,51 @@ class _FinalSttState extends State<FinalStt> {
       print(urlSource);
       await audioPlay.play(urlSource);
     } catch (e) {
-      print('Eroor playing Record : $e');
+      print('Error playing Record : $e');
     }
   }
 
   //api 테스트
-  final gServerIp = 'http://192.168.0.6:5000/';
-  String result = '0';
+  final gServerIp = 'http://172.30.71.136:5000/';
+  String result = '';
 
   Future<String> apiTest(String fileTest) async {
+    //바로 넘겨줄 때
     ByteData data = await rootBundle.load(fileTest);
     List<int> voiceData = data.buffer.asUint8List();
 
+    //로컬에서 넘겨줄 때
     // File file = File(fileTest);
     // List<int> voiceData = await file.readAsBytes();
 
-    String addr = '${gServerIp}tt';
+    String addr = gServerIp + 'tt';
 
     var request = http.MultipartRequest('POST', Uri.parse(addr));
     request.files.add(http.MultipartFile.fromBytes('fileTest', voiceData, filename: 'check4.wav'));
+
+    var streamedResponse = await request.send();
+    var response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 200) {
+      return response.body;
+    } else {
+      String errorMessage = response.body;
+      throw Exception(errorMessage);
+    }
+  }
+  //ai 모델
+  Future<String> check(String fileTest, String content) async {
+    File file = File(fileTest);
+    List<int> voiceData = await file.readAsBytes();
+
+    // ByteData data = await rootBundle.load(fileTest);
+    // List<int> voiceData = data.buffer.asUint8List();
+
+    String addr = gServerIp + 'model';
+
+    var request = http.MultipartRequest('POST', Uri.parse(addr));
+    request.files.add(http.MultipartFile.fromBytes('fileTest', voiceData, filename: 'emotion1.wav'));
+    request.fields['content'] = content;
 
     var streamedResponse = await request.send();
     var response = await http.Response.fromStream(streamedResponse);
@@ -173,20 +190,21 @@ class _FinalSttState extends State<FinalStt> {
 
   @override
   Widget build(BuildContext context) {
+    String a = '';
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 108, 96, 225),
+      backgroundColor: Color.fromARGB(255, 108, 96, 225),
       appBar: AppBar(
         toolbarHeight: 80,
-        backgroundColor: const Color.fromARGB(255, 108, 96, 225),
+        backgroundColor: Color.fromARGB(255, 108, 96, 225),
         elevation: 0,
         centerTitle: true,
-        title: const Text('Transcribe Your Audio'),
+        title: Text('Transcribe Your Audio'),
       ),
       body: SingleChildScrollView(
         child: Container(
           height: MediaQuery.of(context).size.height,
           width: MediaQuery.of(context).size.width,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(
               topRight: Radius.circular(50),
@@ -197,7 +215,7 @@ class _FinalSttState extends State<FinalStt> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
-                const SizedBox(
+                SizedBox(
                   height: 70,
                 ),
                 Container(
@@ -207,23 +225,24 @@ class _FinalSttState extends State<FinalStt> {
                     border: Border.all(color: Colors.black),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  padding: const EdgeInsets.all(5.0),
+                  padding: EdgeInsets.all(5.0),
                   child: content == ''
-                      ? const Text(
+                      ? Text(
                     'Your text will appear here',
                     style: TextStyle(color: Colors.grey),
                   )
                       : Text(
                     content,
-                    style: const TextStyle(fontSize: 20),
+
+                    style: TextStyle(fontSize: 20),
                   ),
                 ),
-                const SizedBox(
+                SizedBox(
                   height: 10,
                 ),
                 Container(
                   child: is_Transcribing
-                      ? const Expanded(
+                      ? Expanded(
                     child: LoadingIndicator(
                       indicatorType: Indicator.ballPulse,
                       colors: [Colors.red, Colors.green, Colors.blue],
@@ -239,15 +258,12 @@ class _FinalSttState extends State<FinalStt> {
                     ),
                     onPressed: is_Transcribing ? () {} : transcribe,
                     child: is_Transcribing
-                        ? const CircularProgressIndicator()
-                        : const Text(
+                        ? CircularProgressIndicator()
+                        : Text(
                       'Transcribe',
                       style: TextStyle(fontSize: 20),
                     ),
                   ),
-                ),
-                const SizedBox(
-                  height: 25,
                 ),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -261,21 +277,27 @@ class _FinalSttState extends State<FinalStt> {
                     if (!isRecording && audioPath != null)
                       ElevatedButton(
                         onPressed: playRecording,
-                        child: const Text('Play Recording'),
+                        child: Text('Play Recording'),
                       ),
-                    ElevatedButton(
-                      onPressed: (){
-                        apiTest('asset/wav/check2.mp3')
-                            .then((value) => result = value)
-                            .whenComplete(() {
-                          if(result.isEmpty == false) setState(() {});
-                        });
-                      },
-                      child: const Text('피치분석'),
-                    ),
-                    Text(result),
-                    //Expanded(child: Text(result)),
                   ],
+                ),
+                Container(
+                  height: 100,
+                  child: Column(
+                    children: [
+                      ElevatedButton(
+                          onPressed: (){
+                            check(audioPath, content)
+                                .then((value) => result = value)
+                                .whenComplete(() {
+                              if(result.isEmpty == false) setState(() {});
+                            });
+                          },
+                          child: Text('감정 분석')
+                      ),
+                      Expanded(child: Text(result)),
+                    ],
+                  ),
                 )
               ],
             ),

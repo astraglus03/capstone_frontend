@@ -1,3 +1,4 @@
+import 'package:capstone_frontend/calendar/calendar.dart';
 import 'package:capstone_frontend/screen/chatbot/chatbot_screen.dart';
 import 'package:capstone_frontend/screen/home/home_screen.dart';
 import 'package:capstone_frontend/screen/statistic/statistic_screen.dart';
@@ -13,7 +14,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   final List<Widget> _MainWidgets = <Widget>[
     const HomeScreen(),
-    const ChatbotScreen(),
+    const Calendar(),
     const StatisticScreen(),
   ];
 
@@ -29,7 +30,7 @@ class _MainScreenState extends State<MainScreen> {
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('asset/conversation.png')),
+            icon: Icon(Icons.calendar_today_outlined),
             label: '',
           ),
           BottomNavigationBarItem(

@@ -1,40 +1,80 @@
 import 'package:capstone_frontend/const/default_sliver_padding.dart';
+import 'package:capstone_frontend/login/kakao_login.dart';
+import 'package:capstone_frontend/login/main_view_model.dart';
+import 'package:capstone_frontend/screen/statistic/bar_chart_sample7.dart';
 import 'package:flutter/material.dart';
+import 'package:capstone_frontend/screen/statistic/photoDetailScreen.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
-class StatisticScreen extends StatelessWidget {
-  final bool hasImage = false;
+import '../diary_detail_screen.dart';
 
-  const StatisticScreen({super.key});
+
+class StatisticScreen extends StatefulWidget {
+  const StatisticScreen({Key? key}) : super(key: key);
+
+  @override
+  _StatisticScreenState createState() => _StatisticScreenState();
+}
+
+class _StatisticScreenState extends State<StatisticScreen> {
+  final TextEditingController memoController = TextEditingController();
+  final FocusNode memoFocusNode = FocusNode();
+  bool _isFocused = false; // 메모란에 포커스 여부
+  final viewmodel = MainViewModel(KakaoLogin());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
           title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.settings),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.search),
-          ),
-        ],
-      )),
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.settings),
+              ),
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.search),
+              ),
+            ],
+          )),
       body: Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20),
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 20),
         child: CustomScrollView(
           slivers: [
             _diaryInfoSliver(),
-            _diaryCountSliver(),
-            _photoVideoSliver(),
+            _photoVideoSliver(context),
             _emotionSliver(),
+            //_diaryCountSliver(),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    memoFocusNode.addListener(() {
+      setState(() {
+        _isFocused = memoFocusNode.hasFocus; // Update the focus status
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    memoController.dispose();
+    memoFocusNode.dispose();
+    super.dispose();
+  }
+
+  // 메모 수정 후 저장
+  void _saveText() {
+    print('Memo Saved: ${memoController.text}');
+    memoFocusNode.unfocus();  // 포커스 해제
   }
 
   DefaultSliverContainer _diaryInfoSliver() {
@@ -42,33 +82,73 @@ class StatisticScreen extends StatelessWidget {
       height: 150,
       child: Stack(
         children: [
-          const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  '다이어리 이름',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+          Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: CircleAvatar(
+                  radius: 40,
+                  // backgroundImage: NetworkImage('https://example.com/profile_pic.jpg'),
+                  backgroundImage: NetworkImage(viewmodel.user!.kakaoAccount!.profile!.profileImageUrl!),
                 ),
-                SizedBox(height: 8),
-                Text(
-                  '메모',
-                  style: TextStyle(
-                    fontSize: 16,
-                  ),
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          viewmodel.user?.kakaoAccount?.profile?.nickname ?? '닉네임',
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(width: 10),
+                        TextButton(
+                          onPressed: () async {
+                            await viewmodel.logout();
+                          },
+                          child: Text('로그아웃'),
+                          style: TextButton.styleFrom(
+                            backgroundColor: Colors.blueGrey,
+                            foregroundColor: Colors.white,
+                            minimumSize: Size(30, 10),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 15),
+                    TextFormField(
+                      controller: memoController,
+                      focusNode: memoFocusNode,
+                      decoration: InputDecoration(
+                        labelText: '메모',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),  // 여기서 패딩을 조정
+                        isDense: true,  // 밀도를 높여 더 작은 폼필드 높이를 생성
+                      ),
+                      style: TextStyle(
+                        fontSize: 14,  // 필요에 따라 폰트 크기도 조정할 수 있음
+                      ),
+                    ),
+
+                    if (_isFocused) // 메모에 포커스 있을 때만 저장하기 버튼 보이기
+                      ElevatedButton(
+                        onPressed: _saveText,
+                        child: Text('저장하기'),
+                      ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
           Positioned(
             right: 5,
             child: IconButton(
-              onPressed: () {}, // 다이어리 내용 수정 이벤트처리
               icon: const Icon(Icons.edit),
+              onPressed: () {
+                memoFocusNode.requestFocus(); // Focus on the memo field
+              },
             ),
           ),
         ],
@@ -94,7 +174,7 @@ class StatisticScreen extends StatelessWidget {
                     Text(
                       '0',
                       style:
-                          TextStyle(fontWeight: FontWeight.w500, fontSize: 20),
+                      TextStyle(fontWeight: FontWeight.w500, fontSize: 20),
                     ),
                     Text(
                       '모든 일기',
@@ -121,7 +201,7 @@ class StatisticScreen extends StatelessWidget {
                     Text(
                       '0',
                       style:
-                          TextStyle(fontWeight: FontWeight.w500, fontSize: 20),
+                      TextStyle(fontWeight: FontWeight.w500, fontSize: 20),
                     ),
                     Text(
                       '즐겨보는 일기',
@@ -137,7 +217,7 @@ class StatisticScreen extends StatelessWidget {
     );
   }
 
-  DefaultSliverContainer _photoVideoSliver() {
+  DefaultSliverContainer _photoVideoSliver(BuildContext context) {
     return DefaultSliverContainer(
       height: 200,
       child: Column(
@@ -148,33 +228,81 @@ class StatisticScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  '사진 / 비디오',
+                  '모든 일기 모아보기',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 TextButton(
-                  onPressed: () {},
-                  child: const Text('0 >'),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PhotoDetailScreen(), // 더보기 버튼 눌렀을 때
+                      ),
+                    );
+                  },
+                  child: const Text('더보기 >'),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => DiaryDetailScreen()), // 첫 번째 이미지 클릭 시
+                    );
+                  },
+                  child: Container(
+                    height: 140,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.asset('asset/img.webp', fit: BoxFit.cover),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => DiaryDetailScreen()), // 두 번째 이미지 클릭 시
+                    );
+                  },
+                  child: Container(
+                    height: 140,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.asset('asset/kakao.png', fit: BoxFit.cover),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
+
   DefaultSliverContainer _emotionSliver() {
-    return const DefaultSliverContainer(
-      height: 200,
+    return DefaultSliverContainer(
+      height: 350,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('감정'),
+          Text('1개월 감정 변화 그래프'),
+          BarChartSample7(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,3 +320,5 @@ class StatisticScreen extends StatelessWidget {
     );
   }
 }
+
+

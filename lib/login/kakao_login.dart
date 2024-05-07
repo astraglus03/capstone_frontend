@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:capstone_frontend/const/ip.dart';
 import 'package:capstone_frontend/login/social_login.dart';
 import 'package:http/http.dart' as http;
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
@@ -21,6 +22,7 @@ class KakaoLogin implements SocialLogin {
         try {
           await UserApi.instance.loginWithKakaoAccount();
           var user = await UserApi.instance.me(); // 사용자 정보 가져오기
+          UserManager().setUserId(user.id.toString());
           await _sendUserInfoToServer(user); // 서버에 유저 정보 보내기
           return true;
         } catch (e) {
@@ -33,19 +35,20 @@ class KakaoLogin implements SocialLogin {
   }
 
   Future<void> _sendUserInfoToServer(User user) async { //서버에 유저 정보 보내는 함수
-    var url = 'http://3.34.199.26:5000/receive_user_info';
+    var url = '$ip/login/receive_user_info';
     var headers = {
       'Content-Type': 'application/json', // 요청의 컨텐츠 유형을 JSON으로 지정
     };
     var body = {
       'userId': user.id.toString(),
       'nickname': user.kakaoAccount?.profile?.nickname ?? '',
+      'profileImage': user.kakaoAccount?.profile?.profileImageUrl ??''
     };
 
     var response = await http.post(
       Uri.parse(url),
       headers: headers,
-      body: jsonEncode(body), // 요청 본문을 JSON 형식으로 인코딩
+      body: jsonEncode(body),
     );
 
     if (response.statusCode == 200) {
@@ -54,6 +57,9 @@ class KakaoLogin implements SocialLogin {
       print('Failed to send user info to server. Status code: ${response.statusCode}');
     }
   }
+
+
+
 
 
   @override

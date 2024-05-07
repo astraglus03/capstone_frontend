@@ -1,3 +1,4 @@
+import 'package:capstone_frontend/login/auth_page.dart';
 import 'package:capstone_frontend/login/kakao_login.dart';
 import 'package:capstone_frontend/login/logintextfield.dart';
 import 'package:capstone_frontend/login/main_view_model.dart';
@@ -54,11 +55,9 @@ class _LoginPageState extends State<LoginPage>
   }
 
   void goToNewPage(BuildContext context) {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => MainScreen(),
-      ),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AuthPage()));
+    });
   }
 
   @override
@@ -89,7 +88,7 @@ class _LoginPageState extends State<LoginPage>
                 );
               },
             ),
-            if (!viewModel.isLogined && isStopped == true) loginAnimation(),
+            if (!viewModel.isLogined && isStopped) loginAnimation(),
           ],
         ),
       ),
