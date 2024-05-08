@@ -15,7 +15,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _MainWidgets = <Widget>[
     const HomeScreen(),
     const Calendar(),
-    const StatisticScreen(),
+    StatisticScreen(),
   ];
 
   int _index = 0;

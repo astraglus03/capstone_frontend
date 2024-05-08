@@ -1,17 +1,16 @@
+import 'package:capstone_frontend/const/api_utils.dart';
+import 'package:capstone_frontend/const/currentuser_model.dart';
 import 'package:capstone_frontend/const/default_sliver_padding.dart';
 import 'package:capstone_frontend/login/kakao_login.dart';
 import 'package:capstone_frontend/login/main_view_model.dart';
 import 'package:capstone_frontend/screen/statistic/bar_chart_sample7.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone_frontend/screen/statistic/photoDetailScreen.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
-
 import '../diary_detail_screen.dart';
 
-
 class StatisticScreen extends StatefulWidget {
-  const StatisticScreen({Key? key}) : super(key: key);
+  const StatisticScreen({super.key});
 
   @override
   _StatisticScreenState createState() => _StatisticScreenState();
@@ -22,7 +21,8 @@ class _StatisticScreenState extends State<StatisticScreen> {
   final FocusNode memoFocusNode = FocusNode();
   bool _isFocused = false; // 메모란에 포커스 여부
   final viewmodel = MainViewModel(KakaoLogin());
-
+  String? userId = UserManager().getUserId();
+  CurrentUser? user;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,6 +78,8 @@ class _StatisticScreenState extends State<StatisticScreen> {
   }
 
   DefaultSliverContainer _diaryInfoSliver() {
+    checkCurrentUser(userId).then((value) => user = value);
+    print(user);
     return DefaultSliverContainer(
       height: 150,
       child: Stack(
@@ -88,8 +90,10 @@ class _StatisticScreenState extends State<StatisticScreen> {
                 padding: const EdgeInsets.all(15.0),
                 child: CircleAvatar(
                   radius: 40,
-                  // backgroundImage: NetworkImage('https://example.com/profile_pic.jpg'),
-                  backgroundImage: NetworkImage(viewmodel.user!.kakaoAccount!.profile!.profileImageUrl!),
+                  backgroundImage: user?.imageUrl != null
+                      ? NetworkImage(user!.imageUrl) as ImageProvider<Object>
+                      : const AssetImage('asset/img.webp') as ImageProvider<Object>,
+                  backgroundColor: Colors.grey[200],
                 ),
               ),
               Expanded(
@@ -100,13 +104,14 @@ class _StatisticScreenState extends State<StatisticScreen> {
                     Row(
                       children: [
                         Text(
-                          viewmodel.user?.kakaoAccount?.profile?.nickname ?? '닉네임',
+                          user?.nickname ?? '닉네임',
                           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         SizedBox(width: 10),
                         TextButton(
                           onPressed: () async {
                             await viewmodel.logout();
+                            setState(() {});
                           },
                           child: Text('로그아웃'),
                           style: TextButton.styleFrom(

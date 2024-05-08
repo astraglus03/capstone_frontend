@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:capstone_frontend/const/ip.dart';
+import 'package:capstone_frontend/const/api_utils.dart';
 import 'package:capstone_frontend/screen/diary_detail_screen.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';

@@ -16,7 +16,7 @@ class PieChart2State extends State {
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 1.3,
+      aspectRatio: 2.5,
       child: Row(
         children: <Widget>[
           const SizedBox(
@@ -45,7 +45,7 @@ class PieChart2State extends State {
                     show: false,
                   ),
                   sectionsSpace: 0,
-                  centerSpaceRadius: 40,
+                  centerSpaceRadius: 20,
                   sections: showingSections(),
                 ),
               ),
@@ -90,7 +90,7 @@ class PieChart2State extends State {
             ],
           ),
           const SizedBox(
-            width: 28,
+            width: 10,
           ),
         ],
       ),
@@ -98,7 +98,7 @@ class PieChart2State extends State {
   }
 
   List<PieChartSectionData> showingSections() {
-    return List.generate(4, (i) {
+    return List.generate(4, (i) { // 감정 개수 넣기
       final isTouched = i == touchedIndex;
       final fontSize = isTouched ? 25.0 : 16.0;
       final radius = isTouched ? 60.0 : 50.0;

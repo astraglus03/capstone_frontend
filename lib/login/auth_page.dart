@@ -1,58 +1,113 @@
-import 'dart:convert';
-import 'package:capstone_frontend/const/ip.dart';
-import 'package:capstone_frontend/login/login_page.dart';
-import 'package:capstone_frontend/screen/main_screen.dart';
-import 'package:http/http.dart' as http;
+import 'package:capstone_frontend/const/api_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:capstone_frontend/screen/main_screen.dart';
+import 'package:capstone_frontend/login/login_page.dart';
 
 class AuthPage extends StatefulWidget {
-  const AuthPage({super.key});
-
   @override
   _AuthPageState createState() => _AuthPageState();
 }
 
-class _AuthPageState extends State<AuthPage> {
+class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin {
+  AnimationController? _controller;
+  Animation<double>? _opacityAnimation;
+  Animation<double>? _scaleAnimation;
+  bool isStopped = false;
+  OverlayEntry? _overlayEntry;
+
   @override
   void initState() {
     super.initState();
+    final userManager = UserManager();
+
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 3));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 3.0).animate(
+        CurvedAnimation(parent: _controller!, curve: Interval(0.0, 0.5, curve: Curves.easeIn)));
+    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+        CurvedAnimation(parent: _controller!, curve: Interval(0.5, 1.0, curve: Curves.easeOut)));
+
+    _controller!.addListener(() {
+      if (!isStopped && _controller!.value == 1.0 / 3.0) {
+        setState(() {
+          isStopped = true;
+          _controller!.stop();
+          _showOverlay(context);
+        });
+      }
+    });
+
+    userManager.userIdStream.listen((userId) {
+      if (userId != null && userId.isNotEmpty) {
+        _removeOverlay();
+        _controller!.forward();
+      }
+    });
+
+    _controller!.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        goToNewPage();
+      }
+    });
+    _controller!.forward();
+  }
+
+  void _showOverlay(BuildContext context) {
+    _overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        child: LoginPage(),
+      ),
+    );
+    Overlay.of(context)?.insert(_overlayEntry!);
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  void goToNewPage() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MainScreen()));
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder<User?>(
-        future: checkCurrentUser(UserManager().getUserId()), // userId를 바로 사용
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasData && snapshot.data != null) {
-            // 사용자 데이터가 있으면 MainScreen으로 이동
-            return MainScreen();
-          } else {
-            // 데이터가 없거나 로그인 필요 시 LoginPage로 이동
-            return LoginPage();
-          }
-        },
+      body: Stack(
+        children: <Widget>[
+          AnimatedBuilder(
+            animation: _controller!,
+            builder: (context, child) {
+              return Opacity(
+                opacity: _opacityAnimation!.value,
+                child: Transform.scale(
+                  scale: _scaleAnimation!.value,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('asset/img.webp'),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
 
-  Future<User?> checkCurrentUser(String? userId) async {
-    if (userId == null) return null; // userId가 null이면 로그인 페이지로 이동
-    try {
-      final response = await http.get(Uri.parse('$ip/userinfo/userinfo/$userId'));
-      if (response.body.isNotEmpty) {
-        var userData = jsonDecode(response.body);
-        return User.fromJson(userData);
-      }
-    } catch (e) {
-      print('Error checking current user: $e');
-      return null;
-    }
-    return null;
+  @override
+  void dispose() {
+    _overlayEntry?.remove();
+    _controller?.dispose();
+    super.dispose();
   }
 }

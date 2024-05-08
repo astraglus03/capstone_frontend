@@ -13,6 +13,13 @@ class DiaryDetailScreen extends StatefulWidget {
 }
 
 class _DiaryDetailScreen extends State<DiaryDetailScreen> {
+  bool _showEmotionSliver = false;  // 감정 변화 그래프 표시 상태를 저장하는 변수
+
+  void _toggleEmotionSliver() {
+    setState(() {
+      _showEmotionSliver = !_showEmotionSliver;  // 토글
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,15 +29,15 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
         centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 20),
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
         child: CustomScrollView(
           slivers: [
             _hashtagSliver(),
-            _emotionSliver(),
-            _rateSliver(),
             _pictureSliver(),
             _diarySliver(),
-            _feedbackSliver()
+            if (_showEmotionSliver) _emotionSliver(),  // 조건부 표시
+            _feedbackSliver(),
+            //_rateSliver(),
           ],
         ),
       ),
@@ -40,16 +47,16 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
   // 해시태그
   DefaultSliverContainer _hashtagSliver() {
     return const DefaultSliverContainer(
-      height: 30,
+      height: 20,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('#행복', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,),),
+          Text('#행복', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold,),),
           SizedBox(width: 20),
-          Text('#당황', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,),),
+          Text('#당황', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold,),),
           SizedBox(width: 20),
-          Text('#불안', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,),),
+          Text('#불안', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold,),),
           SizedBox(width: 20),
         ],
       ),
@@ -66,19 +73,6 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
         children: [
           Text('감정 변화 그래프'),
           LineChartSample1(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 텍스트가 아닌 아이콘으로 대체 예정
-              Text('놀람'),
-              Text('공포'),
-              Text('분노'),
-              Text('중립'),
-              Text('행복'),
-              Text('혐오'),
-            ],
-          ),
         ],
       ),
     );
@@ -87,25 +81,13 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
   // 감정 비율 그래프
   DefaultSliverContainer _rateSliver() {
     return DefaultSliverContainer(
-      height: 350,
+      height: 180,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('감정 비율 그래프'),
           PieChartSample2(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [ // 텍스트가 아닌 아이콘으로 대체 예정
-              Text('놀람'),
-              Text('공포'),
-              Text('분노'),
-              Text('중립'),
-              Text('행복'),
-              Text('혐오'),
-            ],
-          ),
         ],
       ),
     );
@@ -114,7 +96,7 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
   // 그림
   DefaultSliverContainer _pictureSliver() {
     return DefaultSliverContainer(
-      height: 200,
+      height: 150,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -133,7 +115,7 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
   // 일기
   DefaultSliverContainer _diarySliver() {
     return const DefaultSliverContainer(
-      height: 400,
+      height: 300,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,18 +135,36 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
 
   // 일기 피드백
   DefaultSliverContainer _feedbackSliver() {
-    return const DefaultSliverContainer(
-      height: 400,
+    return DefaultSliverContainer(
+      height: 300,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('피드백'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween, // 양 끝에 위젯 배치
+            children: [
+              Text('피드백'), // 왼쪽에 배치
+              Expanded( // 중간 공간을 채움
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end, // 오른쪽 정렬
+                  children: [
+                    TextButton(
+                      onPressed: _toggleEmotionSliver,  // 토글 함수 연결
+                      child: const Text('감정 변화 그래프 보기'),
+                    ),
+                    Icon(Icons.show_chart), // 그래프 아이콘
+                  ],
+                ),
+              ),
+            ],
+          ),
+          PieChartSample2(),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [ // 텍스트가 아닌 아이콘으로 대체 예정
-              Text('피드백입니다아아아앙'),
+            children: [
+              Text('피드백입니다아아아앙 피드백입니다아아아앙 '),
             ],
           ),
         ],
