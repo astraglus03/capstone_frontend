@@ -18,37 +18,45 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
   @override
   void initState() {
     super.initState();
+    setupAnimations();
+    listenToUserId();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showOverlay(context);  // 프레임이 완성된 후 로그인 화면을 보여줍니다.
+    });
+  }
+
+  void listenToUserId() {
     final userManager = UserManager();
 
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 3));
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 3.0).animate(
-        CurvedAnimation(parent: _controller!, curve: Interval(0.0, 0.5, curve: Curves.easeIn)));
-    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
-        CurvedAnimation(parent: _controller!, curve: Interval(0.5, 1.0, curve: Curves.easeOut)));
-
-    _controller!.addListener(() {
-      if (!isStopped && _controller!.value == 1.0 / 3.0) {
-        setState(() {
-          isStopped = true;
-          _controller!.stop();
-          _showOverlay(context);
+    userManager.userIdStream.listen((userId) {
+      if (userId.isNotEmpty) {
+        _removeOverlay();
+        _controller!.forward().then((_) {
+          goToNewPage();
         });
       }
     });
+  }
 
-    userManager.userIdStream.listen((userId) {
-      if (userId != null && userId.isNotEmpty) {
-        _removeOverlay();
-        _controller!.forward();
-      }
-    });
+  void setupAnimations() {
+    _controller = AnimationController(
+        vsync: this,
+        duration: const Duration(seconds: 3)
+    );
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 3.0).animate(
+        CurvedAnimation(parent: _controller!, curve: Interval(0.0, 0.5, curve: Curves.easeIn))
+    );
+
+    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+        CurvedAnimation(parent: _controller!, curve: Interval(0.5, 1.0, curve: Curves.easeOut))
+    );
 
     _controller!.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         goToNewPage();
       }
     });
-    _controller!.forward();
   }
 
   void _showOverlay(BuildContext context) {

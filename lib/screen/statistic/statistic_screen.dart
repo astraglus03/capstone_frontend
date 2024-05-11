@@ -78,85 +78,94 @@ class _StatisticScreenState extends State<StatisticScreen> {
   }
 
   DefaultSliverContainer _diaryInfoSliver() {
-    checkCurrentUser(userId).then((value) => user = value);
-    print(user);
     return DefaultSliverContainer(
       height: 150,
-      child: Stack(
-        children: [
-          Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: CircleAvatar(
-                  radius: 40,
-                  backgroundImage: user?.imageUrl != null
-                      ? NetworkImage(user!.imageUrl) as ImageProvider<Object>
-                      : const AssetImage('asset/img.webp') as ImageProvider<Object>,
-                  backgroundColor: Colors.grey[200],
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      child: FutureBuilder<CurrentUser?>(
+        future: checkCurrentUser(userId!),
+        builder: (BuildContext context, AsyncSnapshot<CurrentUser?> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('데이터를 불러오는 중 에러가 발생했습니다.'));
+          } else if (snapshot.hasData) {
+            user = snapshot.data; // 사용자 데이터 업데이트
+            return Stack(
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          user?.nickname ?? '닉네임',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(width: 10),
-                        TextButton(
-                          onPressed: () async {
-                            await viewmodel.logout();
-                            setState(() {});
-                          },
-                          child: Text('로그아웃'),
-                          style: TextButton.styleFrom(
-                            backgroundColor: Colors.blueGrey,
-                            foregroundColor: Colors.white,
-                            minimumSize: Size(30, 10),
+                    Padding(
+                      padding: const EdgeInsets.all(15.0),
+                      child: CircleAvatar(
+                        radius: 40,
+                        backgroundImage: user?.imageUrl != null
+                            ? NetworkImage(user!.imageUrl) as ImageProvider<Object>
+                            : const AssetImage('asset/img.webp') as ImageProvider<Object>,
+                        backgroundColor: Colors.grey[200],
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                user?.nickname ?? '닉네임',
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(width: 10),
+                              TextButton(
+                                onPressed: () async {
+                                  await viewmodel.logout();
+                                  setState(() {});
+                                },
+                                child: Text('로그아웃'),
+                                style: TextButton.styleFrom(
+                                  backgroundColor: Colors.blueGrey,
+                                  foregroundColor: Colors.white,
+                                  minimumSize: Size(30, 10),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+                          SizedBox(height: 15),
+                          TextFormField(
+                            controller: memoController,
+                            focusNode: memoFocusNode,
+                            decoration: InputDecoration(
+                              labelText: '메모',
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                              isDense: true,
+                            ),
+                            style: TextStyle(fontSize: 14),
+                          ),
+                          if (_isFocused)
+                            ElevatedButton(
+                              onPressed: _saveText,
+                              child: Text('저장하기'),
+                            ),
+                        ],
+                      ),
                     ),
-                    SizedBox(height: 15),
-                    TextFormField(
-                      controller: memoController,
-                      focusNode: memoFocusNode,
-                      decoration: InputDecoration(
-                        labelText: '메모',
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),  // 여기서 패딩을 조정
-                        isDense: true,  // 밀도를 높여 더 작은 폼필드 높이를 생성
-                      ),
-                      style: TextStyle(
-                        fontSize: 14,  // 필요에 따라 폰트 크기도 조정할 수 있음
-                      ),
-                    ),
-
-                    if (_isFocused) // 메모에 포커스 있을 때만 저장하기 버튼 보이기
-                      ElevatedButton(
-                        onPressed: _saveText,
-                        child: Text('저장하기'),
-                      ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          Positioned(
-            right: 5,
-            child: IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () {
-                memoFocusNode.requestFocus(); // Focus on the memo field
-              },
-            ),
-          ),
-        ],
+                Positioned(
+                  right: 5,
+                  child: IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () {
+                      memoFocusNode.requestFocus();
+                    },
+                  ),
+                ),
+              ],
+            );
+          } else {
+            return Center(child: Text("데이터가 없습니다")); // 데이터 없음 표시
+          }
+        },
       ),
     );
   }

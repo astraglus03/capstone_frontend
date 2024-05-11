@@ -7,41 +7,36 @@ String ip = 'http://3.34.199.26:5000';
 
 class UserManager {
   static final UserManager _instance = UserManager._internal();
-
   factory UserManager() => _instance;
 
-  final StreamController<String?> _userIdController = StreamController<String?>.broadcast();
-
+  final _userIdController = StreamController<String>.broadcast();
   String? _userId;
 
   UserManager._internal();
 
-  void setUserId(String? id) {
-    _userId = id;
-    _userIdController.add(_userId); // 스트림에 userId 업데이트를 푸시
+  Stream<String> get userIdStream => _userIdController.stream;
+
+  void setUserId(String userId) {
+    _userId = userId;
+    _userIdController.add(userId);
   }
 
-  String? getUserId() {
-    return _userId;
-  }
+  String? getUserId() => _userId;
 
-  Stream<String?> get userIdStream => _userIdController.stream;
-
-  // 리소스 정리를 위해 필요
   void dispose() {
     _userIdController.close();
   }
 }
 
-
-Future<CurrentUser?> checkCurrentUser(String? userId) async {
+Future<CurrentUser?> checkCurrentUser(String userId) async {
     try {
       final resp = await http.get(Uri.parse('$ip/userinfo/userinfo/$userId'));
       if (resp.statusCode == 200) {
         var data = jsonDecode(resp.body);
-        print("사용자 ID: ${data['userId']}");
-        print("닉네임: ${data['nickname']}");
-        print("프로필 이미지 URL: ${data['profileImage']}");
+        return CurrentUser.fromJson(data);
+        // print("사용자 ID: ${data['userId']}");
+        // print("닉네임: ${data['nickname']}");
+        // print("프로필 이미지 URL: ${data['profileImage']}");
       } else {
         throw Exception('서버에서 정보를 가져오는 데 실패했습니다.');
       }
@@ -49,6 +44,6 @@ Future<CurrentUser?> checkCurrentUser(String? userId) async {
       print('에러 발생: $e');
     }
 }
-
-
 // String? userId = UserManager().getUserId();
+
+

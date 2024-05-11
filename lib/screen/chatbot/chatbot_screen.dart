@@ -1,10 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:capstone_frontend/const/api_utils.dart';
-import 'package:chat_gpt_sdk/chat_gpt_sdk.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:audioplayers/audioplayers.dart' as audio_players;
 import 'package:just_audio/just_audio.dart' as just_audio;
@@ -22,6 +21,7 @@ class ChatbotScreen extends StatefulWidget {
 
 class _ChatbotScreenState extends State<ChatbotScreen> {
   bool? keyboardMode = false;
+
   //음성 녹음
   late FlutterSoundRecorder audioRecord;
   late audio_players.AudioPlayer audioPlay;
@@ -30,34 +30,39 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   bool isRecording = false;
   bool is_Transcribing = false;
   just_audio.AudioPlayer audioPlayer = just_audio.AudioPlayer();
-  String emotionResult = '';
+  String threadId = '';
+  String message1 = '';
+  String emotion = '';
+  int status = 0;
+
 
   @override
   void initState() {
     super.initState();
     audioPlay = audio_players.AudioPlayer();
     audioRecord = FlutterSoundRecorder();
-    audioPath='';
+    audioPath = '';
     setPermissions();
   }
 
   @override
-  void dispose(){
+  void dispose() {
     audioPlay.dispose();
     super.dispose();
   }
 
   void setPermissions() async {
+    await Permission.microphone.request();
     await Permission.manageExternalStorage.request();
     await Permission.storage.request();
   }
-
 
   Future<void> transcribe() async {
     setState(() {
       is_Transcribing = true;
     });
-    final serviceAccount = ServiceAccount.fromString('${(await rootBundle.loadString('asset/stt-test-418715-4b9278f2d459.json'))}');
+    final serviceAccount = ServiceAccount.fromString(
+        '${(await rootBundle.loadString('asset/stt-test-418715-4b9278f2d459.json'))}');
     final speechToText = SpeechToText.viaServiceAccount(serviceAccount);
     final config = RecognitionConfig(
         encoding: AudioEncoding.LINEAR16,
@@ -75,9 +80,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           ChatMessage message = ChatMessage(
             user: _currentUser,
             createdAt: DateTime.now(),
-            text: content! + '(${emotionResult})',
+            text: content!,
           );
-          getChatResponse(message);
+          print(content);
+          sendMessage(threadId, UserManager().getUserId()!, content!, File(audioPath)).whenComplete(() => getChatResponse(message));
         });
       } else {
         setState(() {
@@ -96,7 +102,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       });
     });
   }
-
 
   Future<List<int>> _getAudioContent(filePath) async {
     //로컬 디렉토리 파일을 넘겨주기 위해서는 이 방법을 해야함.
@@ -128,33 +133,22 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         isRecording = false;
       });
       await audioRecord.closeRecorder();
-      await check(audioPath).then((value) => emotionResult= value).whenComplete(() {
-        if(emotionResult.isEmpty == false) setState(() {});
-        transcribe();
-      });
+      await createChatThread(UserManager().getUserId()!);
+      await transcribe();
+
     } catch (e) {
       print('Error Stopping record : $e');
       print('정지 에러');
     }
   }
 
-  // Future<void> playRecording() async {
-  //   try {
-  //     audio_players.Source urlSource = audio_players.UrlSource(audioPath);
-  //     print(urlSource);
-  //     await audioPlay.play(urlSource);
-  //   } catch (e) {
-  //     print('Error playing Record : $e');
-  //   }
-  // }
-
-  //나중에 매개변수를 클래스로 만들면 좋을 것 같음, 현재는 테스트용
   //Clova Api 연결, 문자, 감정, 감정의 강도, 음색
   Future<Uint8List> clovaTTS(String text, int volume, int emotion, int emotionStrength, int alpha) async {
     //키 값
-    final String clientId = 'ahwedxouv8';
-    final String clientSecret = 'n2I4W3NoWC6fOTEopeEF0wo8SotsJbKSXIYanpL2';
-    final String url = 'https://naveropenapi.apigw.ntruss.com/tts-premium/v1/tts';
+    final String clientId = '574nlmj8za';
+    final String clientSecret = 'pS4OXOd0H1AqPKUeLabIqlVwMv8VJZCCuynxstAe';
+    final String url =
+        'https://naveropenapi.apigw.ntruss.com/tts-premium/v1/tts';
 
     //헤더
     Map<String, String> headers = {
@@ -182,7 +176,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     };
 
     //http post 요청
-    final response = await http.post(Uri.parse(url), headers: headers, body: body);
+    final response =
+        await http.post(Uri.parse(url), headers: headers, body: body);
 
     if (response.statusCode == 200) {
       return response.bodyBytes;
@@ -194,76 +189,66 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   Future<void> _playAudio(String text, int volume, int emotion, int emotionStrength, int alpha) async {
     //tts 결과를 반환, 데이터 타입 -> Uint8List
-    final voice =
-    await clovaTTS(text, volume, emotion, emotionStrength, alpha);
+    final voice = await clovaTTS(text, volume, emotion, emotionStrength, alpha);
 
     // 임시 파일로 변환하여 재생
     final tempFile = File('${Directory.systemTemp.path}/clova.mp3');
     await tempFile.writeAsBytes(voice);
     print('임시 파일 경로: $tempFile');
 
-    await audioPlayer.setFilePath(tempFile.path);
-    await audioPlayer.play();
+    audioPlayer.setFilePath(tempFile.path);
+    audioPlayer.play();
   }
 
-  //api 테스트
-
-  Future<String> apiTest(String fileTest) async {
-    //바로 넘겨줄 때
-    ByteData data = await rootBundle.load(fileTest);
-    List<int> voiceData = data.buffer.asUint8List();
-
-    //로컬에서 넘겨줄 때
-    // File file = File(fileTest);
-    // List<int> voiceData = await file.readAsBytes();
-
-    var request = http.MultipartRequest('POST', Uri.parse('$ip/tt'));
-    request.files.add(http.MultipartFile.fromBytes('fileTest', voiceData, filename: 'check4.wav'));
-
-    var streamedResponse = await request.send();
-    var response = await http.Response.fromStream(streamedResponse);
+  Future<String> createChatThread(String userId) async {
+    final response = await http.post(
+      Uri.parse('$ip/Create_Chatroom/chatroom'),
+      headers:{'Content-Type': 'application/json',},
+      body: jsonEncode({'userId': userId}),
+    );
 
     if (response.statusCode == 200) {
-      return response.body;
+      final data = jsonDecode(response.body);
+      setState(() {
+        threadId = data['chat_thread'];
+      });
+      return data['chat_thread'];
+    } else if (response.statusCode == 400) {
+      final data = jsonDecode(response.body);
+      throw Exception('Error: ${data['message']}');
     } else {
-      String errorMessage = response.body;
-      throw Exception(errorMessage);
-    }
-  }
-  //ai 모델
-  Future<String> check(String fileTest) async {
-    File file = File(fileTest);
-    List<int> voiceData = await file.readAsBytes();
-
-    // ByteData data = await rootBundle.load(fileTest);
-    // List<int> voiceData = data.buffer.asUint8List();
-
-    var request = http.MultipartRequest('POST', Uri.parse('$ip/Send_Message_Dairy/model'));
-    print('요청:${request}');
-    request.files.add(http.MultipartFile.fromBytes('fileTest', voiceData, filename: 'emotion.wav',));
-
-    var streamedResponse = await request.send();
-    print('보냈지?:$streamedResponse');
-    var response = await http.Response.fromStream(streamedResponse);
-    print('결과:${response.body}');
-
-    if (response.statusCode == 200) {
-      print('체크 성공적');
-      return response.body;
-    } else {
-      String errorMessage = response.body;
-      throw Exception(errorMessage);
+      throw Exception('Failed to connect to the server');
     }
   }
 
-
-  final _openAI = OpenAI.instance.build(
-    token: dotenv.env['OPENAI_API_KEY'],
-    baseOption: HttpSetup(
-      receiveTimeout: const Duration(seconds: 5),
-    ),
-    enableLog: true,
-  );
+  Future<void> sendMessage(
+      String threadId, String userId, String content, File? audioFile) async {
+    var request =
+        http.MultipartRequest('POST', Uri.parse('$ip/Send_Message_Dairy/model'))
+          ..fields['threadid'] = threadId
+          ..fields['userid'] = userId
+          ..fields['content'] = content;
+    if (audioFile != null) {
+      request.files.add(await http.MultipartFile.fromPath(
+        'fileTest',
+        audioFile.path,
+        filename: 'emotion.wav',
+      ));
+    }
+    var response = await request.send();
+    if (response.statusCode == 200) {
+      String responseBody = await response.stream.bytesToString();
+      var data = jsonDecode(responseBody);
+      setState(() {
+        message1 = data['message'];
+        emotion = data['emotion'];
+        status = data['status'];
+      });
+      print('서버로부터의 응답: ${data['message']}, 감정: ${data['emotion']}');
+    } else {
+      print('메시지 전송 실패: 상태 코드 ${response.statusCode}');
+    }
+  }
 
   final ChatUser _currentUser =
       ChatUser(id: '1', firstName: 'Kim', lastName: 'KeonDong');
@@ -288,9 +273,12 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         actions: [
           TextButton(
             onPressed: () {},
-            child: const Text('일기 작성', style: TextStyle(
-              color: Colors.black,
-            ),),
+            child: const Text(
+              '일기 작성',
+              style: TextStyle(
+                color: Colors.black,
+              ),
+            ),
           ),
           keyboardMode ?? false
               ? IconButton(
@@ -298,7 +286,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                     setState(() {
                       keyboardMode = false;
                     });
-                  }, icon: const Icon(Icons.mic_none_outlined),)
+                  },
+                  icon: const Icon(Icons.mic_none_outlined),
+                )
               : IconButton(
                   onPressed: () {
                     setState(() {
@@ -324,7 +314,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           sendOnEnter: true,
           inputDisabled: keyboardMode ?? false ? false : true,
           inputDecoration: InputDecoration(
-            hintText: keyboardMode ==false ? "위의 마이크로 나에게 너의 감정을 들려줘!" : '키보드 모드 활성화 되었습니다.',
+            hintText: keyboardMode == false
+                ? "위의 마이크로 나에게 너의 감정을 들려줘!"
+                : '키보드 모드 활성화 되었습니다.',
             hintStyle: TextStyle(color: Colors.grey[400]),
             border: OutlineInputBorder(
               borderSide: BorderSide.none,
@@ -332,20 +324,26 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             ),
             filled: true,
             fillColor: Colors.grey[100],
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           ),
         ),
         messages: _messages,
       ),
-      floatingActionButton: keyboardMode == false ?  Align(
-        alignment: const Alignment(0,0.99),
-        child: FloatingActionButton(
-          onPressed: () => isRecording ? stopRecording() : startRecording(),
-          backgroundColor: isRecording? Colors.red : const Color.fromRGBO(0, 166, 126, 1),
-          child: const Icon(Icons.mic_none_outlined,size: 24),
-        ),
-      ) : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat  ,
+      floatingActionButton: keyboardMode == false
+          ? Align(
+              alignment: const Alignment(0, 0.99),
+              child: FloatingActionButton(
+                onPressed: () =>
+                    isRecording ? stopRecording() : startRecording(),
+                backgroundColor: isRecording
+                    ? Colors.red
+                    : const Color.fromRGBO(0, 166, 126, 1),
+                child: const Icon(Icons.mic_none_outlined, size: 24),
+              ),
+            )
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
@@ -355,40 +353,18 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       _typingUsers.add(_gptChatUser);
     });
 
-    List<Map<String, dynamic>> messagesHistory = _messages.reversed.map((m) {
-      if (m.user == _currentUser) {
-        return {
-          'role': 'user',
-          'content': m.text,
-        };
-      } else {
-        return {
-          'role': 'assistant',
-          'content': m.text,
-        };
-      }
-    }).toList();
-    final request = ChatCompleteText(
-      model: GptTurboChatModel(),
-      messages: messagesHistory,
-      maxToken: 200,
-    );
-    final resp = await _openAI.onChatCompletion(request: request);
-
-    for (var element in resp!.choices) {
-      if (element.message != null) {
-        setState(() {
-          _messages.insert(
-            0,
-            ChatMessage(
-              user: _gptChatUser,
-              createdAt: DateTime.now(),
-              text: element.message!.content,
-            ),
-          );
-          // _playAudio(element.message!.content, 5, 1, 2, 0);
-        });
-      }
+    if (message1 != null) {
+      setState(() {
+        _messages.insert(
+          0,
+          ChatMessage(
+            user: _gptChatUser,
+            createdAt: DateTime.now(),
+            text: message1,
+          ),
+        );
+        // _playAudio(message1, 5, 1, 2, 0);
+      });
     }
     setState(() {
       _typingUsers.remove(_gptChatUser);
