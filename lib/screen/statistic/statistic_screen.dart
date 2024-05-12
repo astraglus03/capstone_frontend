@@ -1,13 +1,19 @@
+import 'dart:convert';
+
 import 'package:capstone_frontend/const/api_utils.dart';
 import 'package:capstone_frontend/const/currentuser_model.dart';
 import 'package:capstone_frontend/const/default_sliver_padding.dart';
 import 'package:capstone_frontend/login/kakao_login.dart';
 import 'package:capstone_frontend/login/main_view_model.dart';
 import 'package:capstone_frontend/screen/statistic/bar_chart_sample7.dart';
+import 'package:capstone_frontend/screen/statistic/model/photo_model.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone_frontend/screen/statistic/photoDetailScreen.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import '../diary_detail_screen.dart';
+import 'package:http/http.dart' as http;
 
 class StatisticScreen extends StatefulWidget {
   const StatisticScreen({super.key});
@@ -22,32 +28,33 @@ class _StatisticScreenState extends State<StatisticScreen> {
   bool _isFocused = false; // 메모란에 포커스 여부
   final viewmodel = MainViewModel(KakaoLogin());
   String? userId = UserManager().getUserId();
-  CurrentUser? user;
+  final String limit = '2';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
           title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.settings),
-              ),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.search),
-              ),
-            ],
-          )),
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.settings),
+          ),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.search),
+          ),
+        ],
+      )),
       body: Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 20),
+        padding:
+            const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 20),
         child: CustomScrollView(
           slivers: [
             _diaryInfoSliver(),
-            _photoVideoSliver(context),
+            _photoSliver(context),
             _emotionSliver(),
-            //_diaryCountSliver(),
           ],
         ),
       ),
@@ -74,7 +81,24 @@ class _StatisticScreenState extends State<StatisticScreen> {
   // 메모 수정 후 저장
   void _saveText() {
     print('Memo Saved: ${memoController.text}');
-    memoFocusNode.unfocus();  // 포커스 해제
+    memoFocusNode.unfocus(); // 포커스 해제
+  }
+
+  Future<CurrentUser?> checkCurrentUser(String userId) async {
+    try {
+      final resp = await http.get(Uri.parse('$ip/userinfo/userinfo/$userId'));
+      if (resp.statusCode == 200) {
+        var data = jsonDecode(resp.body);
+        return CurrentUser.fromJson(data);
+        // print("사용자 ID: ${data['userId']}");
+        // print("닉네임: ${data['nickname']}");
+        // print("프로필 이미지 URL: ${data['profileImage']}");
+      } else {
+        throw Exception('서버에서 정보를 가져오는 데 실패했습니다.');
+      }
+    } catch (e) {
+      print('에러 발생: $e');
+    }
   }
 
   DefaultSliverContainer _diaryInfoSliver() {
@@ -82,13 +106,12 @@ class _StatisticScreenState extends State<StatisticScreen> {
       height: 150,
       child: FutureBuilder<CurrentUser?>(
         future: checkCurrentUser(userId!),
-        builder: (BuildContext context, AsyncSnapshot<CurrentUser?> snapshot) {
+        builder: (_, AsyncSnapshot<CurrentUser?> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('데이터를 불러오는 중 에러가 발생했습니다.'));
           } else if (snapshot.hasData) {
-            user = snapshot.data; // 사용자 데이터 업데이트
             return Stack(
               children: [
                 Row(
@@ -97,9 +120,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
                       padding: const EdgeInsets.all(15.0),
                       child: CircleAvatar(
                         radius: 40,
-                        backgroundImage: user?.imageUrl != null
-                            ? NetworkImage(user!.imageUrl) as ImageProvider<Object>
-                            : const AssetImage('asset/img.webp') as ImageProvider<Object>,
+                        backgroundImage: NetworkImage(snapshot.data!.imageUrl),
                         backgroundColor: Colors.grey[200],
                       ),
                     ),
@@ -111,8 +132,9 @@ class _StatisticScreenState extends State<StatisticScreen> {
                           Row(
                             children: [
                               Text(
-                                user?.nickname ?? '닉네임',
-                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                snapshot.data!.nickname,
+                                style: TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.bold),
                               ),
                               SizedBox(width: 10),
                               TextButton(
@@ -136,7 +158,8 @@ class _StatisticScreenState extends State<StatisticScreen> {
                             decoration: InputDecoration(
                               labelText: '메모',
                               border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                              contentPadding: EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 12),
                               isDense: true,
                             ),
                             style: TextStyle(fontSize: 14),
@@ -170,143 +193,100 @@ class _StatisticScreenState extends State<StatisticScreen> {
     );
   }
 
-  DefaultSliverContainer _diaryCountSliver() {
-    return DefaultSliverContainer(
-      height: 100,
-      child: Center(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () {},
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      '0',
-                      style:
-                      TextStyle(fontWeight: FontWeight.w500, fontSize: 20),
-                    ),
-                    Text(
-                      '모든 일기',
-                      style: TextStyle(fontSize: 15),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(
-              width: 1,
-              height: 40,
-              child: Container(
-                color: Colors.grey[400],
-              ),
-            ),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {},
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      '0',
-                      style:
-                      TextStyle(fontWeight: FontWeight.w500, fontSize: 20),
-                    ),
-                    Text(
-                      '즐겨보는 일기',
-                      style: TextStyle(fontSize: 15),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  Future<List<PhotoModel>> getPhoto(String userId, String date, String month, String limit) async {
+    final resp = await http.post(Uri.parse('$ip/Search_Diary_api/searchdiary'),
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: jsonEncode({
+          'userId': userId,
+          'date': date,
+          'month': month,
+          'limit': limit,
+        }));
+    if (resp.statusCode == 200) {
+      // print(resp.body);
+      // print('가져오기 성공');
+      // print('가져오기${jsonData.map((item) => PhotoModel.fromJson(item)).toList()}');
+      List<dynamic> jsonData = jsonDecode(resp.body);
+      return jsonData.map((item) => PhotoModel.fromJson(item)).toList();
+    } else {
+      print('Failed to load photo with status code: ${resp.statusCode}');
+      print('Error body: ${resp.body}');
+      throw Exception(
+          'Failed to load photo with status code: ${resp.statusCode}');
+    }
   }
 
-  DefaultSliverContainer _photoVideoSliver(BuildContext context) {
+  DefaultSliverContainer _photoSliver(BuildContext context) {
     return DefaultSliverContainer(
       height: 200,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 12, top: 5),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: FutureBuilder<List<PhotoModel>>(
+        future: getPhoto(userId!, 'None', 'None', limit),
+        builder: (_, AsyncSnapshot<List<PhotoModel>> snapshot) {
+          if (snapshot.hasError) {
+            print('여기부분${snapshot.error}');
+            return Center(child: Text('데이터를 불러오는 중 에러가 발생했습니다.'));
+          } else if (snapshot.hasData) {
+            return Row(
               children: [
-                const Text(
-                  '모든 일기 모아보기',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
+                Expanded(
+                  flex: 9,
+                  child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DiaryDetailScreen(
+                                      // id: snapshot.data![index].userId,
+                                      // image: snapshot.data![index].image,
+                                      ),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Image.memory(
+                                snapshot.data![index].image,
+                                width: 150,
+                                height: 150,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          );
+                        },
                   ),
                 ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PhotoDetailScreen(), // 더보기 버튼 눌렀을 때
-                      ),
-                    );
-                  },
-                  child: const Text('더보기 >'),
+                Expanded(
+                  flex: 1,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PhotoDetailScreen(),
+                        ),
+                      );
+                    },
+                    child: Text('더보기'),
+                  )
                 ),
               ],
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => DiaryDetailScreen()), // 첫 번째 이미지 클릭 시
-                    );
-                  },
-                  child: Container(
-                    height: 140,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.asset('asset/img.webp', fit: BoxFit.cover),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 8),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => DiaryDetailScreen()), // 두 번째 이미지 클릭 시
-                    );
-                  },
-                  child: Container(
-                    height: 140,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.asset('asset/kakao.png', fit: BoxFit.cover),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
+            );
+          } else {
+            return Center(
+              child: CircularProgressIndicator(),
+            ); // 데이터 없음 표시
+          }
+        },
       ),
     );
   }
-
 
   DefaultSliverContainer _emotionSliver() {
     return DefaultSliverContainer(
@@ -320,7 +300,8 @@ class _StatisticScreenState extends State<StatisticScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [ // 텍스트가 아닌 아이콘으로 대체 예정
+            children: [
+              // 텍스트가 아닌 아이콘으로 대체 예정
               Text('놀람'),
               Text('공포'),
               Text('분노'),
@@ -334,5 +315,3 @@ class _StatisticScreenState extends State<StatisticScreen> {
     );
   }
 }
-
-

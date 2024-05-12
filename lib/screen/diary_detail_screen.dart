@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:capstone_frontend/screen/statistic/bar_chart_sample7.dart';
 import 'package:capstone_frontend/screen/statistic/line_chart_sample1.dart';
 import 'package:capstone_frontend/screen/statistic/pie_chart_sample2.dart';
@@ -6,18 +8,24 @@ import 'package:flutter/material.dart';
 import '../const/default_sliver_padding.dart';
 
 class DiaryDetailScreen extends StatefulWidget {
-  const DiaryDetailScreen({super.key});
+  // final String userId;
+  // final Uint8List image;
+  const DiaryDetailScreen({
+    super.key,
+    // required this.userId,
+    // required this.image,
+  });
 
   @override
   State<DiaryDetailScreen> createState() => _DiaryDetailScreen();
 }
 
 class _DiaryDetailScreen extends State<DiaryDetailScreen> {
-  bool _showEmotionSliver = false;  // 감정 변화 그래프 표시 상태를 저장하는 변수
+  bool _showEmotionSliver = false; // 감정 변화 그래프 표시 상태를 저장하는 변수
 
   void _toggleEmotionSliver() {
     setState(() {
-      _showEmotionSliver = !_showEmotionSliver;  // 토글
+      _showEmotionSliver = !_showEmotionSliver; // 토글
     });
   }
 
@@ -29,13 +37,14 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
         centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
+        padding:
+            const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
         child: CustomScrollView(
           slivers: [
             _hashtagSliver(),
             _pictureSliver(),
             _diarySliver(),
-            if (_showEmotionSliver) _emotionSliver(),  // 조건부 표시
+            if (_showEmotionSliver) _emotionSliver(), // 조건부 표시
             _feedbackSliver(),
             //_rateSliver(),
           ],
@@ -52,11 +61,29 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('#행복', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold,),),
+          Text(
+            '#행복',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           SizedBox(width: 20),
-          Text('#당황', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold,),),
+          Text(
+            '#당황',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           SizedBox(width: 20),
-          Text('#불안', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold,),),
+          Text(
+            '#불안',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           SizedBox(width: 20),
         ],
       ),
@@ -124,7 +151,8 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [ // 텍스트가 아닌 아이콘으로 대체 예정
+            children: [
+              // 텍스트가 아닌 아이콘으로 대체 예정
               Text('일기입니다아아아앙'),
             ],
           ),
@@ -145,12 +173,13 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween, // 양 끝에 위젯 배치
             children: [
               Text('피드백'), // 왼쪽에 배치
-              Expanded( // 중간 공간을 채움
+              Expanded(
+                // 중간 공간을 채움
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end, // 오른쪽 정렬
                   children: [
                     TextButton(
-                      onPressed: _toggleEmotionSliver,  // 토글 함수 연결
+                      onPressed: _toggleEmotionSliver, // 토글 함수 연결
                       child: const Text('감정 변화 그래프 보기'),
                     ),
                     Icon(Icons.show_chart), // 그래프 아이콘

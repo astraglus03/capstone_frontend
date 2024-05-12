@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:capstone_frontend/const/api_utils.dart';
+import 'package:capstone_frontend/screen/chatbot/chat_resp_model.dart';
+import 'package:capstone_frontend/screen/chatbot/chat_send_model.dart';
+import 'package:capstone_frontend/screen/chatbot/chat_threadid.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,19 +23,19 @@ class ChatbotScreen extends StatefulWidget {
 }
 
 class _ChatbotScreenState extends State<ChatbotScreen> {
-  bool? keyboardMode = false;
 
   //음성 녹음
   late FlutterSoundRecorder audioRecord;
   late audio_players.AudioPlayer audioPlay;
   late String audioPath;
   String? content = '';
+  bool? keyboardMode = false;
   bool isRecording = false;
   bool is_Transcribing = false;
   just_audio.AudioPlayer audioPlayer = just_audio.AudioPlayer();
   String threadId = '';
   String message1 = '';
-  String emotion = '';
+  int emotion = 0;
   int status = 0;
 
 
@@ -82,8 +85,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             createdAt: DateTime.now(),
             text: content!,
           );
-          print(content);
-          sendMessage(threadId, UserManager().getUserId()!, content!, File(audioPath)).whenComplete(() => getChatResponse(message));
+          getChatResponse(message);
         });
       } else {
         setState(() {
@@ -133,7 +135,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         isRecording = false;
       });
       await audioRecord.closeRecorder();
-      await createChatThread(UserManager().getUserId()!);
+      if(_messages.isEmpty){
+        await createChatThread(UserManager().getUserId()!);
+      }
       await transcribe();
 
     } catch (e) {
@@ -143,12 +147,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   }
 
   //Clova Api 연결, 문자, 감정, 감정의 강도, 음색
-  Future<Uint8List> clovaTTS(String text, int volume, int emotion, int emotionStrength, int alpha) async {
+  Future<Uint8List> clovaTTS(String text, int emotion, int volume,  int emotionStrength, int alpha, int speed) async {
     //키 값
-    final String clientId = '574nlmj8za';
-    final String clientSecret = 'pS4OXOd0H1AqPKUeLabIqlVwMv8VJZCCuynxstAe';
-    final String url =
-        'https://naveropenapi.apigw.ntruss.com/tts-premium/v1/tts';
+    const String clientId = '574nlmj8za';
+    const String clientSecret = 'pS4OXOd0H1AqPKUeLabIqlVwMv8VJZCCuynxstAe';
+    const String url = 'https://naveropenapi.apigw.ntruss.com/tts-premium/v1/tts';
 
     //헤더
     Map<String, String> headers = {
@@ -176,8 +179,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     };
 
     //http post 요청
-    final response =
-        await http.post(Uri.parse(url), headers: headers, body: body);
+    final response = await http.post(Uri.parse(url), headers: headers, body: body);
 
     if (response.statusCode == 200) {
       return response.bodyBytes;
@@ -187,9 +189,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     }
   }
 
-  Future<void> _playAudio(String text, int volume, int emotion, int emotionStrength, int alpha) async {
+  Future<void> _playAudio(String text, int emotion, int volume, int emotionStrength, int alpha, int speed) async {
     //tts 결과를 반환, 데이터 타입 -> Uint8List
-    final voice = await clovaTTS(text, volume, emotion, emotionStrength, alpha);
+    final voice = await clovaTTS(text, emotion, volume, emotionStrength, alpha, speed);
 
     // 임시 파일로 변환하여 재생
     final tempFile = File('${Directory.systemTemp.path}/clova.mp3');
@@ -200,7 +202,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     audioPlayer.play();
   }
 
-  Future<String> createChatThread(String userId) async {
+  Future<ChatThreadId> createChatThread(String userId) async {
     final response = await http.post(
       Uri.parse('$ip/Create_Chatroom/chatroom'),
       headers:{'Content-Type': 'application/json',},
@@ -209,8 +211,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      ChatThreadId chatThreadId = ChatThreadId.fromJson(data);
       setState(() {
-        threadId = data['chat_thread'];
+        threadId = chatThreadId.threadId;
       });
       return data['chat_thread'];
     } else if (response.statusCode == 400) {
@@ -221,17 +224,15 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     }
   }
 
-  Future<void> sendMessage(
-      String threadId, String userId, String content, File? audioFile) async {
-    var request =
-        http.MultipartRequest('POST', Uri.parse('$ip/Send_Message_Dairy/model'))
-          ..fields['threadid'] = threadId
-          ..fields['userid'] = userId
-          ..fields['content'] = content;
-    if (audioFile != null) {
+  Future<ChatRespModel?> sendMessage(ChatSendModel model) async {
+    var request = http.MultipartRequest('POST', Uri.parse('$ip/Send_Message_Dairy/model'))
+          ..fields['threadid'] = model.threadId
+          ..fields['userid'] = model.userId
+          ..fields['content'] = model.content;
+    if (model.audioFile != null) {
       request.files.add(await http.MultipartFile.fromPath(
         'fileTest',
-        audioFile.path,
+        model.audioFile.path,
         filename: 'emotion.wav',
       ));
     }
@@ -239,10 +240,12 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     if (response.statusCode == 200) {
       String responseBody = await response.stream.bytesToString();
       var data = jsonDecode(responseBody);
+      // print(data);
+      ChatRespModel respModel = ChatRespModel.fromJson(data);
       setState(() {
-        message1 = data['message'];
-        emotion = data['emotion'];
-        status = data['status'];
+        message1 = respModel.message;
+        emotion = respModel.emotion;
+        status = respModel.status;
       });
       print('서버로부터의 응답: ${data['message']}, 감정: ${data['emotion']}');
     } else {
@@ -352,22 +355,33 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       _messages.insert(0, m);
       _typingUsers.add(_gptChatUser);
     });
+    // ChatSendModel sendModel = ChatSendModel(
+    //   UserManager().getUserId()!,
+    //   threadId,
+    //   m.text,
+    //   File(audioPath),
+    // );
+    ChatSendModel sendModel = ChatSendModel(
+      userId: UserManager().getUserId()!,
+      threadId: threadId,
+      content: m.text,
+      audioFile: File(audioPath),
+    );
 
-    if (message1 != null) {
-      setState(() {
-        _messages.insert(
-          0,
-          ChatMessage(
-            user: _gptChatUser,
-            createdAt: DateTime.now(),
-            text: message1,
-          ),
-        );
-        // _playAudio(message1, 5, 1, 2, 0);
-      });
-    }
-    setState(() {
-      _typingUsers.remove(_gptChatUser);
-    });
+    sendMessage(sendModel).whenComplete(
+      () {
+        setState(() {
+          _messages.insert(0,
+            ChatMessage(
+              user: _gptChatUser,
+              createdAt: DateTime.now(),
+              text: message1,
+            ),
+          );
+          _typingUsers.remove(_gptChatUser);
+        });
+        // _playAudio(message1, emotion, 5, 2, 0,-5);
+      },
+    );
   }
 }
