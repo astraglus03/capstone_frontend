@@ -3,38 +3,45 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class _LineChart extends StatelessWidget {
-  const _LineChart({required this.isShowingMainData});
-
   final bool isShowingMainData;
+  final String chatCount; // 이 줄 추가
+
+  const _LineChart({
+    required this.isShowingMainData,
+    required this.chatCount, // 이 줄 추가
+  });
 
   @override
   Widget build(BuildContext context) {
+    // 문자열을 정수로 파싱한 후 double로 변환
+    double maxX = (int.tryParse(chatCount) ?? 7).toDouble(); // int로 하면 안 됨
     return LineChart(
-      isShowingMainData ? sampleData1 : sampleData2,
+      isShowingMainData ? sampleData1(maxX) : sampleData2(maxX),
       duration: const Duration(milliseconds: 250),
     );
   }
 
-  LineChartData get sampleData1 => LineChartData(
+  LineChartData sampleData1(double maxX) => LineChartData(
     lineTouchData: lineTouchData1,
     gridData: gridData,
     titlesData: titlesData1,
     borderData: borderData,
     lineBarsData: lineBarsData1,
     minX: 0,
-    maxX: 8, // 이거 감정 대화 횟수 자동으로 바꿔지게 해야 함
+    maxX: maxX,
     maxY: 4,
     minY: 0,
   );
 
-  LineChartData get sampleData2 => LineChartData( // 새로고침 아이콘 누르면 나오는 그래프
+  // 새로고침 누르면 나오는 그래프
+  LineChartData sampleData2(double maxX) => LineChartData(
     lineTouchData: lineTouchData2,
     gridData: gridData,
     titlesData: titlesData2,
     borderData: borderData,
     lineBarsData: lineBarsData2,
     minX: 0,
-    maxX: 7,
+    maxX: maxX,
     maxY: 6,
     minY: 0,
   );
@@ -375,10 +382,12 @@ class _LineChart extends StatelessWidget {
 }
 
 class LineChartSample1 extends StatefulWidget {
-  const LineChartSample1({super.key});
+  final String chatCount; // chatCount 파라미터 추가
+
+  const LineChartSample1({super.key, required this.chatCount}); // Constructor 수정
 
   @override
-  State<StatefulWidget> createState() => LineChartSample1State();
+  State<LineChartSample1> createState() => LineChartSample1State();
 }
 
 class LineChartSample1State extends State<LineChartSample1> {
@@ -399,28 +408,17 @@ class LineChartSample1State extends State<LineChartSample1> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              const SizedBox(
-                height: 37,
-              ),
-              // const Text(
-              //   'Monthly Sales',
-              //   style: TextStyle(
-              //     color: AppColors.primary,
-              //     fontSize: 32,
-              //     fontWeight: FontWeight.bold,
-              //     letterSpacing: 2,
-              //   ),
-              //   textAlign: TextAlign.center,
-              // ),
+              const SizedBox(height: 37),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(right: 16, left: 6),
-                  child: _LineChart(isShowingMainData: isShowingMainData),
+                  child: _LineChart(
+                    isShowingMainData: isShowingMainData,
+                    chatCount: widget.chatCount, // chatCount를 여기에 전달
+                  ),
                 ),
               ),
-              const SizedBox(
-                height: 10,
-              ),
+              const SizedBox(height: 10),
             ],
           ),
           IconButton(
