@@ -1,17 +1,14 @@
 import 'dart:convert';
-
+import 'dart:typed_data';
 import 'package:capstone_frontend/const/api_utils.dart';
 import 'package:capstone_frontend/const/currentuser_model.dart';
 import 'package:capstone_frontend/const/default_sliver_padding.dart';
 import 'package:capstone_frontend/login/kakao_login.dart';
 import 'package:capstone_frontend/login/main_view_model.dart';
 import 'package:capstone_frontend/screen/statistic/bar_chart_sample7.dart';
-import 'package:capstone_frontend/screen/statistic/model/photo_model.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone_frontend/screen/statistic/photoDetailScreen.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
-import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import '../diary_detail_screen.dart';
 import 'package:http/http.dart' as http;
 
@@ -193,7 +190,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
     );
   }
 
-  Future<List<PhotoModel>> getPhoto(String userId, String date, String month, String limit) async {
+  Future<List<DiaryModel>> getPhoto(String userId, String date, String month, String limit) async {
     final resp = await http.post(Uri.parse('$ip/Search_Diary_api/searchdiary'),
         headers: {
           'content-type': 'application/json',
@@ -209,7 +206,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
       // print('가져오기 성공');
       // print('가져오기${jsonData.map((item) => PhotoModel.fromJson(item)).toList()}');
       List<dynamic> jsonData = jsonDecode(resp.body);
-      return jsonData.map((item) => PhotoModel.fromJson(item)).toList();
+      return jsonData.map((item) => DiaryModel.fromJson(item)).toList();
     } else {
       print('Failed to load photo with status code: ${resp.statusCode}');
       print('Error body: ${resp.body}');
@@ -221,9 +218,9 @@ class _StatisticScreenState extends State<StatisticScreen> {
   DefaultSliverContainer _photoSliver(BuildContext context) {
     return DefaultSliverContainer(
       height: 200,
-      child: FutureBuilder<List<PhotoModel>>(
+      child: FutureBuilder<List<DiaryModel>>(
         future: getPhoto(userId!, 'None', 'None', limit),
-        builder: (_, AsyncSnapshot<List<PhotoModel>> snapshot) {
+        builder: (_, AsyncSnapshot<List<DiaryModel>> snapshot) {
           if (snapshot.hasError) {
             print('여기부분${snapshot.error}');
             return Center(child: Text('데이터를 불러오는 중 에러가 발생했습니다.'));
@@ -243,16 +240,15 @@ class _StatisticScreenState extends State<StatisticScreen> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => DiaryDetailScreen(
-                                      // id: snapshot.data![index].userId,
-                                      // image: snapshot.data![index].image,
-                                      ),
+                                    photoDetail: snapshot.data![index],
+                                  ),
                                 ),
                               );
                             },
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Image.memory(
-                                snapshot.data![index].image,
+                                snapshot.data![index].image ?? Uint8List(0),
                                 width: 150,
                                 height: 150,
                                 fit: BoxFit.cover,

@@ -4,24 +4,27 @@ import 'package:capstone_frontend/screen/statistic/resources/indicator.dart';
 import 'package:flutter/material.dart';
 
 class PieChartSample2 extends StatefulWidget {
-  const PieChartSample2({super.key});
+  final List<String> emotionList;
+
+  PieChartSample2({super.key, required this.emotionList});
 
   @override
-  State<StatefulWidget> createState() => PieChart2State();
+  _PieChart2State createState() => _PieChart2State();
 }
 
-class PieChart2State extends State {
+class _PieChart2State extends State<PieChartSample2> {
   int touchedIndex = -1;
 
   @override
   Widget build(BuildContext context) {
+    final emotionCounts = _countEmotions(widget.emotionList);
+    final totalEmotions = widget.emotionList.length;
+    final List<PieChartSectionData> sections = _createChartSections(emotionCounts, totalEmotions);
+
     return AspectRatio(
       aspectRatio: 2.5,
       child: Row(
         children: <Widget>[
-          const SizedBox(
-            height: 18,
-          ),
           Expanded(
             child: AspectRatio(
               aspectRatio: 1,
@@ -36,129 +39,74 @@ class PieChart2State extends State {
                           touchedIndex = -1;
                           return;
                         }
-                        touchedIndex = pieTouchResponse
-                            .touchedSection!.touchedSectionIndex;
+                        touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
                       });
                     },
                   ),
-                  borderData: FlBorderData(
-                    show: false,
-                  ),
+                  borderData: FlBorderData(show: false),
                   sectionsSpace: 0,
                   centerSpaceRadius: 20,
-                  sections: showingSections(),
+                  sections: sections,
                 ),
               ),
             ),
           ),
-          const Column(
+          Column(
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Indicator(
-                color: AppColors.contentColorBlue,
-                text: 'First',
-                isSquare: true,
-              ),
-              SizedBox(
-                height: 4,
-              ),
-              Indicator(
-                color: AppColors.contentColorYellow,
-                text: 'Second',
-                isSquare: true,
-              ),
-              SizedBox(
-                height: 4,
-              ),
-              Indicator(
-                color: AppColors.contentColorPurple,
-                text: 'Third',
-                isSquare: true,
-              ),
-              SizedBox(
-                height: 4,
-              ),
-              Indicator(
-                color: AppColors.contentColorGreen,
-                text: 'Fourth',
-                isSquare: true,
-              ),
-              SizedBox(
-                height: 18,
-              ),
-            ],
+            children: _buildIndicators(emotionCounts),
           ),
-          const SizedBox(
-            width: 10,
-          ),
+          const SizedBox(width: 10),
         ],
       ),
     );
   }
 
-  List<PieChartSectionData> showingSections() {
-    return List.generate(4, (i) { // 감정 개수 넣기
-      final isTouched = i == touchedIndex;
-      final fontSize = isTouched ? 25.0 : 16.0;
-      final radius = isTouched ? 60.0 : 50.0;
-      const shadows = [Shadow(color: Colors.black, blurRadius: 2)];
-      switch (i) {
-        case 0:
-          return PieChartSectionData(
-            color: AppColors.contentColorBlue,
-            value: 40,
-            title: '40%',
-            radius: radius,
-            titleStyle: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.bold,
-              color: AppColors.mainTextColor1,
-              shadows: shadows,
-            ),
-          );
-        case 1:
-          return PieChartSectionData(
-            color: AppColors.contentColorYellow,
-            value: 30,
-            title: '30%',
-            radius: radius,
-            titleStyle: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.bold,
-              color: AppColors.mainTextColor1,
-              shadows: shadows,
-            ),
-          );
-        case 2:
-          return PieChartSectionData(
-            color: AppColors.contentColorPurple,
-            value: 15,
-            title: '15%',
-            radius: radius,
-            titleStyle: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.bold,
-              color: AppColors.mainTextColor1,
-              shadows: shadows,
-            ),
-          );
-        case 3:
-          return PieChartSectionData(
-            color: AppColors.contentColorGreen,
-            value: 15,
-            title: '15%',
-            radius: radius,
-            titleStyle: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.bold,
-              color: AppColors.mainTextColor1,
-              shadows: shadows,
-            ),
-          );
-        default:
-          throw Error();
-      }
-    });
+  Map<String, int> _countEmotions(List<String> emotions) {
+    Map<String, int> counts = {};
+    for (var emotion in emotions) {
+      counts[emotion] = (counts[emotion] ?? 0) + 1;
+    }
+    return counts;
+  }
+
+  List<PieChartSectionData> _createChartSections(Map<String, int> emotionCounts, int total) {
+    List<PieChartSectionData> sections = [];
+    int i = 0;
+    emotionCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value))  // 높은 빈도순으로 정렬
+      ..forEach((entry) {
+        final isTouched = i == touchedIndex;
+        sections.add(PieChartSectionData(
+          color: AppColors.colors[i % AppColors.colors.length],
+          value: (entry.value / total * 100).toDouble(),
+          title: '${(entry.value / total * 100).toInt()}%',
+          radius: isTouched ? 60.0 : 50.0,
+          titleStyle: TextStyle(
+            fontSize: isTouched ? 25.0 : 16.0,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            shadows: const [Shadow(color: Colors.black, blurRadius: 2)],
+          ),
+        ));
+        i++;
+      });
+    return sections;
+  }
+
+  List<Widget> _buildIndicators(Map<String, int> emotionCounts) {
+    List<Widget> indicators = [];
+    emotionCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value))
+      ..asMap().forEach((index, entry) {
+        indicators.add(Indicator(
+          color: AppColors.colors[index % AppColors.colors.length],
+          text: entry.key,
+          isSquare: true,
+        ));
+        indicators.add(const SizedBox(height: 4));
+      });
+    indicators.add(const SizedBox(height: 18));
+    return indicators;
   }
 }

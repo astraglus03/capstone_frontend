@@ -1,4 +1,5 @@
 import 'package:capstone_frontend/calendar/utils.dart';
+import 'package:capstone_frontend/const/api_utils.dart';
 import 'package:capstone_frontend/screen/chatbot/chatbot_screen.dart';
 import 'package:capstone_frontend/screen/diary_detail_screen.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -29,8 +30,7 @@ class _HomeScreenState extends State<HomeScreen>
   DateTime currentDate = DateTime.now();
   late int daysInMonth;
   late CarouselController carouselController;
-  String userID = '';
-  String userNickname = '';
+  final userId = UserManager().getUserId();
 
   @override
   void initState() {
@@ -319,7 +319,7 @@ class _HomeScreenState extends State<HomeScreen>
                                   Text('#행복 #불안 #화남 #중립'),
                                   IconButton(
                                     onPressed: () {
-                                      Navigator.of(context).push(MaterialPageRoute(builder: (_) => DiaryDetailScreen()));
+                                      // Navigator.of(context).push(MaterialPageRoute(builder: (_) => DiaryDetailScreen()));
                                     },
                                     icon: Icon(
                                       Icons.more_horiz_outlined,

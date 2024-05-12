@@ -1,7 +1,5 @@
 import 'dart:convert';
-
-import 'package:capstone_frontend/screen/statistic/model/photo_detail_model.dart';
-import 'package:capstone_frontend/screen/statistic/model/photo_model.dart';
+import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone_frontend/screen/diary_detail_screen.dart';
 import 'package:http/http.dart' as http;
@@ -24,7 +22,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
 
   final userId = UserManager().getUserId();
 
-  Future<List<PhotoDetailModel>> getPhoto(String userId, String date, String month, String limit) async {
+  Future<List<DiaryModel>> getPhoto(String userId, String date, String month, String limit) async {
     final resp = await http.post(Uri.parse('$ip/Search_Diary_api/searchdiary'), headers: {
       'content-type': 'application/json',
     }, body: jsonEncode({
@@ -38,7 +36,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
         List<dynamic> jsonData = jsonDecode(resp.body);
         print(jsonData.length);  // 성공적으로 출력
 
-        var photoList = jsonData.map((item) => PhotoDetailModel.fromJson(item)).toList();
+        var photoList = jsonData.map((item) => DiaryModel.fromJson(item)).toList();
         print(photoList);  // 변환 성공 후 출력
         return photoList;
       } catch (e) {
@@ -64,10 +62,13 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
           ),
         ),
       ),
-      body: FutureBuilder<List<PhotoDetailModel>>(
+      body: FutureBuilder<List<DiaryModel>>(
         future: getPhoto(userId!, 'None', 'None','None'),
-        builder: (_, AsyncSnapshot<List<PhotoDetailModel>> snapshot) {
+        builder: (_, AsyncSnapshot<List<DiaryModel>> snapshot) {
           print('데이터${snapshot.data}');
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
           if (snapshot.hasData) {
             return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,7 +83,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 10.0),
                         child: GridView.builder(
                           shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(), // 스크롤뷰 내부의 그리드 스크롤 방지
+                          physics: const NeverScrollableScrollPhysics(),
                           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2, // 한 줄에 2개 이미지
                             crossAxisSpacing: 10, // 가로 간격
@@ -90,11 +91,14 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                           ),
                           itemCount: snapshot.data!.length,
                           itemBuilder: (context, index) {
+                            final pItem = snapshot.data![index];
                             return GestureDetector(
                               onTap: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => DiaryDetailScreen()), // diary_detail_screen() 호출
+                                  MaterialPageRoute(builder: (context) => DiaryDetailScreen(
+                                    photoDetail : pItem,
+                                  )),
                                 );
                               },
                               child: GridTile(

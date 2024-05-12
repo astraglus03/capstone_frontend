@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:capstone_frontend/screen/statistic/model/photo_model.dart';
+import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
 
-class PhotoDetailModel{
+class DiaryDetailModel{
   final String? content;
   final List<String>? textEmotion;
   final List<String>? speechEmotion;
@@ -12,7 +12,7 @@ class PhotoDetailModel{
   final DateTime? date;
   final Uint8List? image;
 
-  PhotoDetailModel({
+  DiaryDetailModel({
      this.content,
      this.textEmotion,
      this.speechEmotion,
@@ -22,10 +22,10 @@ class PhotoDetailModel{
      this.image,
   });
 
-  factory PhotoDetailModel.fromJson(Map<String, dynamic> json) {
+  factory DiaryDetailModel.fromJson(Map<String, dynamic> json) {
     String base64String = json['image'];
     Uint8List image = base64Decode(base64String);
-    return PhotoDetailModel(
+    return DiaryDetailModel(
       // userId: baseModel.userId,
       // date: baseModel.date,
       // image: baseModel.image,

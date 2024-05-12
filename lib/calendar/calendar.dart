@@ -188,9 +188,9 @@ class _CalendarState extends State<Calendar> {
                       ),
                       child: ListTile(
                         onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => DiaryDetailScreen())
-                          );
+                          // Navigator.of(context).push(
+                          //   MaterialPageRoute(builder: (_) => DiaryDetailScreen())
+                          // );
                         },
                         title: Text('${value[index]}'),
                       ),
