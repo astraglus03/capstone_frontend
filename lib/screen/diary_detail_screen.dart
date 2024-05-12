@@ -7,7 +7,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import'package:intl/intl.dart';
-
 import '../const/default_sliver_padding.dart';
 import 'package:capstone_frontend/const/api_utils.dart';
 
@@ -31,8 +30,7 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
     });
   }
 
-  Future<List<DiaryItem>> sendDiaryToBackend(
-      String userId, String date, String month, String limit) async {
+  Future<List<DiaryItem>> sendDiaryToBackend(String userId, String date, String month, String limit) async {
     final resp = await http.post(Uri.parse('$ip/Search_Diary_api/searchdiary'),
         headers: {
           'content-type': 'application/json',
@@ -104,41 +102,22 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
   DefaultSliverContainer _emotionSliver() {
     final date = widget!.photoDetail.date;
     final month = DateFormat('MM').format(date!);
-    final day = DateFormat('dd').format(date);
+    final day = DateFormat('yyyy-MM-dd').format(date);
     print('date: $date, month: $month, day: $day');
     return DefaultSliverContainer(
       height: 350,
-      child: FutureBuilder<List<DiaryItem>>(
-        future: sendDiaryToBackend(userId!,day, month, 'None'),
-        builder: (_, AsyncSnapshot<List<DiaryItem>> snapshot) {
-          if (snapshot.hasError) {
-            print('Error: ${snapshot.error}');
-            return Center(child: Text('데이터를 불러오는 중 에러가 발생했습니다. 에러: ${snapshot.error}'));
-          } else if (snapshot.hasData) {
-            var chatCount = snapshot.data!.first.chatCount;
-            List<String> textEmo = snapshot.data!.first.textEmotion.cast<String>();
-            List<String> voiceEmo = snapshot.data!.first.speechEmotion.cast<String>();
-            print(textEmo);
-            print(voiceEmo);
-            return Column(
+      child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('감정 변화 그래프'),
                 LineChartSample1(
-                  chatCount: chatCount.toString(),
-                  textEmo: textEmo,
-                  voiceEmo: voiceEmo,
+                  chatCount: widget.photoDetail.chatCount.toString(),
+                  textEmo: widget.photoDetail.textEmotion!.cast<String>(),
+                  voiceEmo: widget.photoDetail.speechEmotion!.cast<String>(),
                 ),
               ],
-            );
-          } else {
-            return Center(
-              child: CircularProgressIndicator(),
-            ); // 데이터 없음 표시
-          }
-        },
-      ),
+            ),
     );
   }
 

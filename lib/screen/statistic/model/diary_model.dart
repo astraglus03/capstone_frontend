@@ -8,8 +8,8 @@ class DiaryModel {
   final String? content;
   final List<String>? textEmotion;
   final List<String>? speechEmotion;
-  final int? charCount;
-  final List<int>? finalEmotion;
+  final int? chatCount;
+  final List<int>? absEmotion;
 
   DiaryModel({
     this.userId,
@@ -18,8 +18,8 @@ class DiaryModel {
     this.content,
     this.textEmotion,
     this.speechEmotion,
-    this.charCount,
-    this.finalEmotion,
+    this.chatCount,
+    this.absEmotion,
   });
 
   factory DiaryModel.fromJson(Map<String, dynamic> json) {
@@ -32,8 +32,8 @@ class DiaryModel {
       content: json['content'] ?? '',
       textEmotion: json['textEmotion'] != null ? List<String>.from(json['textEmotion']) : [],
       speechEmotion: json['speechEmotion'] != null ? List<String>.from(json['speechEmotion']) : [],
-      charCount: json['charCount'] ?? 0,
-      finalEmotion: json['finalEmotion'] != null ? List<int>.from(json['finalEmotion']) : [],
+      chatCount: json['chatCount'] ?? 0,
+      absEmotion: json['absEmotion'] != null ? List<int>.from(json['absEmotion']) : [],
     );
   }
 }
