@@ -1,10 +1,11 @@
 import 'dart:convert';
+import 'package:capstone_frontend/screen/statistic/model/schedule_resp_model.dart';
 import 'package:capstone_frontend/const/api_utils.dart';
-import 'package:capstone_frontend/screen/diary_detail_screen.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'utils.dart';
+import 'package:intl/intl.dart';
 
 class Calendar extends StatefulWidget {
   const Calendar({super.key});
@@ -19,17 +20,43 @@ class _CalendarState extends State<Calendar> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
+  final userId = UserManager().getUserId();
 
-  Map<DateTime, String> dateImageUrls = {
-    DateTime(2024, 5, 14): 'asset/img.webp',
-    DateTime(2024, 5, 25): 'asset/view 3.webp',
-  };
-  Map<DateTime, String> emotionColors = {};
+  // Map<DateTime, String> dateImageUrls = {
+  //   DateTime(2024, 5, 14): 'asset/img.webp',
+  //   DateTime(2024, 5, 25): 'asset/view 3.webp',
+  // };
+  // Map<DateTime, String> emotionColors = {};
+
+  Future<List<ScheduleRespModel>> respSchedule(String userId, String date){
+    return dio.get('$ip/get_future_api/getfuture/$userId/$date', options: Options(
+        validateStatus: (status) => true
+    )).then((resp) {
+        print(resp.data);
+        if(resp.statusCode != 200) return <ScheduleRespModel>[];
+        return List<ScheduleRespModel>.from(resp.data.map((x) => ScheduleRespModel.fromJson(x)));
+    });
+  }
+  void getSchedules() async {
+    List<ScheduleRespModel> schedules = await respSchedule(userId!, DateFormat('yyyy-MM').format(_focusedDay));
+
+    setState(() {
+      kEvents.clear();
+
+      for (var i in schedules) {
+        DateTime date = DateTime.parse(i.date);
+        List<Event> existingEvents = kEvents[date] ?? [];
+        existingEvents.add(Event(i.content));
+        kEvents[date] = existingEvents;
+      }
+    });
+  }
+
 
   @override
   void initState() {
     super.initState();
-    // fetchDatas();
+    getSchedules();
     _selectedDay = _focusedDay;
     _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
   }
@@ -38,20 +65,6 @@ class _CalendarState extends State<Calendar> {
   void dispose() {
     _selectedEvents.dispose();
     super.dispose();
-  }
-
-  void fetchDatas() async {
-    final resp = await dio.post('$ip/image');
-    var data = jsonDecode(resp.data);
-
-    setState(() {
-      data.forEach((item) {
-        DateTime date = DateTime.parse(item['date']);
-        String imageUrl = item['imageUrl'];
-        dateImageUrls[date] = imageUrl;
-        String emotionUrl = item['emotionColor'];
-      });
-    });
   }
 
   void _showYearMonthPicker(BuildContext context) {
@@ -130,30 +143,17 @@ class _CalendarState extends State<Calendar> {
             },
             onPageChanged: (focusedDay) {
               _focusedDay = focusedDay;
+              getSchedules();
             },
             calendarBuilders: CalendarBuilders(
               defaultBuilder: (context, day, focusedDay) {
-                String? imageUrl = dateImageUrls[day];
+                // String? imageUrl = dateImageUrls[day];
                 BoxDecoration decoration;
                 // 배경 있으면 배경 추가됨
-                if (imageUrl != null) {
                   decoration = BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage(imageUrl),
-                      fit: BoxFit.cover,
-                    ),
+                    color: Colors.lightBlue.shade50, // 배경 처리 예정
                     shape: BoxShape.circle,
                   );
-                } else {
-                  decoration = BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('asset/img.webp'),
-                      fit: BoxFit.cover,
-                    ),
-                    // color: Colors.lightBlue.shade50, // 배경 처리 예정
-                    shape: BoxShape.circle,
-                  );
-                }
                 return Container(
                   margin: const EdgeInsets.symmetric(
                     horizontal: 12.0,
@@ -187,11 +187,7 @@ class _CalendarState extends State<Calendar> {
                         borderRadius: BorderRadius.circular(12.0),
                       ),
                       child: ListTile(
-                        onTap: () {
-                          // Navigator.of(context).push(
-                          //   MaterialPageRoute(builder: (_) => DiaryDetailScreen())
-                          // );
-                        },
+                        onTap: () {},
                         title: Text('${value[index]}'),
                       ),
                     );

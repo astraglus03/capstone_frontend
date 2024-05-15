@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone_frontend/screen/diary_detail_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:capstone_frontend/const/api_utils.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 
 class PhotoDetailScreen extends StatefulWidget {
   const PhotoDetailScreen({Key? key}) : super(key: key);
@@ -21,31 +23,35 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
   }
 
   final userId = UserManager().getUserId();
+  final dio = Dio();
 
   Future<List<DiaryModel>> getPhoto(String userId, String date, String month, String limit) async {
-    final resp = await http.post(Uri.parse('$ip/Search_Diary_api/searchdiary'), headers: {
-      'content-type': 'application/json',
-    }, body: jsonEncode({
+
+    final resp = await dio.post('$ip/Search_Diary_api/searchdiary', data: {
       'userId': userId,
       'date': date,
       'month': month,
       'limit': limit,
-    }));
+    }, options: Options(
+      headers: {
+        'content-type': 'application/json',
+      },
+    )
+    );
+
     if (resp.statusCode == 200) {
       try {
-        List<dynamic> jsonData = jsonDecode(resp.body);
-        print(jsonData.length);  // 성공적으로 출력
+        print(resp.data.length);  // 성공적으로 출력
 
-        var photoList = jsonData.map((item) => DiaryModel.fromJson(item)).toList();
-        print(photoList);  // 변환 성공 후 출력
-        return photoList;
+        List<dynamic> data = resp.data;
+        return data.map((e) => DiaryModel.fromJson(e)).toList();
       } catch (e) {
         print('Error parsing photos: $e');  // 파싱 중 발생한 에러 출력
         throw Exception('Error parsing photos: $e');
       }
     } else {
       print('Failed to load photo with status code: ${resp.statusCode}');
-      print('Error body: ${resp.body}');
+      print('Error body: ${resp.data}');
       throw Exception('Failed to load photo with status code: ${resp.statusCode}');
     }
   }
@@ -65,9 +71,9 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
       body: FutureBuilder<List<DiaryModel>>(
         future: getPhoto(userId!, 'None', 'None','None'),
         builder: (_, AsyncSnapshot<List<DiaryModel>> snapshot) {
-          print('데이터${snapshot.data}');
+          // print('데이터${snapshot.data}');
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return _buildAllPhotoSkeletonUI();
           }
           if (snapshot.hasData) {
             return Column(
@@ -108,16 +114,16 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                                     Expanded(
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(10),
-                                        child: Image.memory(snapshot.data![index].image!, fit: BoxFit.cover)
+                                        child: Image.memory(pItem.image!, fit: BoxFit.cover)
                                       ),
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-                                      child: Text(DateFormat('yyyy년 MM월 dd일').format(snapshot.data![index].date!), style: TextStyle(fontWeight: FontWeight.bold)),
+                                      child: Text(DateFormat('yyyy년 MM월 dd일').format(pItem.date!), style: TextStyle(fontWeight: FontWeight.bold)),
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 2),
-                                      child: Text(snapshot.data![index].speechEmotion!.toSet().toList().join('*'), style: TextStyle(color: Colors.grey[600])),
+                                      child: Text(pItem.speechEmotion!.toSet().map((e) => '#$e').join(' ')  , style: TextStyle(color: Colors.grey[600])),
                                     ),
                                   ],
                                 ),
@@ -138,5 +144,54 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
       ),
     );
   }
-}
 
+  Widget _buildAllPhotoSkeletonUI(){
+    return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2, // 한 줄에 2개 이미지
+          crossAxisSpacing: 10, // 가로 간격
+          mainAxisSpacing: 10, // 세로 간격
+        ),
+        itemCount: 6,
+        itemBuilder: (context, index) {
+          return Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: GridTile(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Expanded(
+                  child: Container(
+                    color: Colors.grey,
+                  ),
+                ),
+                Container(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                    child: Container(
+                      color: Colors.grey,
+                      height: 20,
+                    ),
+                  ),
+                ),
+                Container(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    child: Container(
+                      color: Colors.grey,
+                      height: 20,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          );
+        },
+      );
+  }
+
+}

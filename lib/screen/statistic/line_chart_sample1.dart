@@ -1,28 +1,44 @@
 import 'package:capstone_frontend/screen/statistic/resources/app_resources.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'dart:math';
 
+
+enum GraphType {
+  voice,
+  abs,
+  text,
+}
 class _LineChart extends StatelessWidget {
-  final bool isShowingMainData;
+  final GraphType graphType;
   final String chatCount;
   final List<String> textEmo;
   final List<String> voiceEmo;
+  final List<String> absEmo;
 
   const _LineChart({
-    required this.isShowingMainData,
+    required this.graphType,
     required this.chatCount,
     required this.textEmo,
     required this.voiceEmo,
+    required this.absEmo,
   });
 
   @override
   Widget build(BuildContext context) {
     // 문자열을 정수로 파싱한 후 double로 변환
-    double maxX = (int.tryParse(chatCount) ?? 0).toDouble(); // int로 하면 안 됨
-    return LineChart(
-      isShowingMainData ? TextGraph(maxX) : VoiceGraph(maxX),
-      duration: const Duration(milliseconds: 250),
-    );
+    double maxX = (int.tryParse(chatCount) ?? 0).toDouble();
+
+    switch (graphType) {
+      case GraphType.voice:
+        return LineChart(VoiceGraph(maxX));
+      case GraphType.abs:
+        return LineChart(AbsGraph(maxX));
+      case GraphType.text:
+        return LineChart(TextGraph(maxX));
+      default:
+        return LineChart(TextGraph(maxX));
+    }
   }
 
   //새로운 그래프 로직
@@ -30,57 +46,34 @@ class _LineChart extends StatelessWidget {
     final emotionCountMap = <String, List<FlSpot>>{};
     Map<String, int> emotionAccumulatedCounts = {};
 
-    // 감정 누적 카운트 초기화
+    // Initialize emotion count
     for (var emotion in textEmo.toSet()) {
       emotionAccumulatedCounts[emotion] = 0;
-      emotionCountMap[emotion] = [FlSpot(0, 0)]; // 시작점을 (0, 0)으로 설정
+      emotionCountMap[emotion] = [FlSpot(0, 0)];
     }
 
-    //textEmo
-    // 각 x 좌표에서 감정별 누적 횟수 계산
+    // Accumulate emotions
     for (var i = 0; i < textEmo.length; i++) {
       final emotion = textEmo[i];
       emotionAccumulatedCounts[emotion] = emotionAccumulatedCounts[emotion]! + 1;
 
-      // 모든 감정에 대해 현재 누적 횟수 업데이트
+      // Update spots for each emotion
       for (var emo in emotionAccumulatedCounts.keys) {
         emotionCountMap[emo]!.add(FlSpot(i.toDouble() + 1, emotionAccumulatedCounts[emo]!.toDouble()));
       }
     }
 
     final lineBarsData = emotionCountMap.entries.map((entry) {
-      // 감정에 따른 색상 지정
-      Color color;
-      switch (entry.key) {
-        case "중립":
-          color = Colors.grey;  // 중립은 회색
-          break;
-        case "슬픔":
-          color = Colors.blue;  // 슬픔은 파란색
-          break;
-        case "분노":
-          color = Colors.red;
-          break;
-        case "행복":
-          color = Colors.green;
-          break;
-        case "당황":
-          color = Colors.yellow;
-          break;
-        case "상처":
-          color = Colors.orange;
-          break;
-        case "불안":
-          color = Colors.purple;
-          break;
-
-        default:
-          color = Colors.black;  // 기본값은 검정색
-          break;
-      }
+      Color color = entry.key == "중립" ? Colors.grey :
+      entry.key == "슬픔" ? Colors.blue :
+      entry.key == "분노" ? Colors.red :
+      entry.key == "행복" ? Colors.green :
+      entry.key == "당황" ? Colors.yellow :
+      entry.key == "상처" ? Colors.orange :
+      entry.key == "불안" ? Colors.purple : Colors.black;  // 색상 매핑
 
       return LineChartBarData(
-        isCurved: false, // 부드럽게 연결 여부
+        isCurved: false,
         color: color,
         barWidth: 4,
         dotData: FlDotData(show: true),
@@ -90,52 +83,29 @@ class _LineChart extends StatelessWidget {
     }).toList();
 
     return LineChartData(
-      lineTouchData: LineTouchData(
-        handleBuiltInTouches: true,
-        touchTooltipData: LineTouchTooltipData(
-          getTooltipColor: (touchedSpot) => Colors.blueGrey.withOpacity(0.8),
-        ),
-      ),
+      lineTouchData: _getLineTouchData(),  // 클릭->감정,수치 함께 보여줌
       gridData: FlGridData(show: true),
       titlesData: FlTitlesData(
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            getTitlesWidget: (value, meta) {
-              final style = TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              );
-              return Text(value.toInt().toString(), style: style);
-            },
-            showTitles: true,
-            reservedSize: 32,
-            interval: 1,
-          ),
+        bottomTitles: AxisTitles(sideTitles: bottomTitles),
+        leftTitles: AxisTitles(sideTitles: leftTitles()),
+        topTitles: AxisTitles(
+          sideTitles: SideTitles(showTitles: false), // 상단 제목을 표시하지 않음
         ),
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(
-            getTitlesWidget: (value, meta) {
-              return Text('${value.toInt()}', style: TextStyle(fontWeight: FontWeight.bold));
-            },
-            showTitles: true,
-            reservedSize: 40,
-            interval: 1,
-          ),
+        rightTitles: AxisTitles(
+          sideTitles: SideTitles(showTitles: false), // 우측 제목을 표시하지 않음
         ),
       ),
       borderData: FlBorderData(
         show: true,
-        border: Border(
-          bottom: BorderSide(color: Colors.blueGrey.withOpacity(0.5), width: 4),
-          left: BorderSide(color: Colors.blueGrey.withOpacity(0.5), width: 4),
-          right: const BorderSide(color: Colors.transparent),
-          top: const BorderSide(color: Colors.transparent),
+        border: Border(bottom: BorderSide(color: Colors.blueGrey.withOpacity(0.5), width: 4), // 아래쪽 테두리 색상 및 두께 지정
+          left: BorderSide(color: Colors.blueGrey.withOpacity(0.5), width: 4),    // 왼쪽 테두리 색상 및 두께 지정
         ),
       ),
+
       minX: 0,
       maxX: maxX,
       minY: 0,
-      maxY: 7,
+      maxY: emotionAccumulatedCounts.values.isNotEmpty ? (emotionAccumulatedCounts.values.reduce(max) + 2).toDouble() : 7,
       lineBarsData: lineBarsData,
     );
   }
@@ -144,57 +114,34 @@ class _LineChart extends StatelessWidget {
     final emotionCountMap = <String, List<FlSpot>>{};
     Map<String, int> emotionAccumulatedCounts = {};
 
-    // 감정 누적 카운트 초기화
+    // Initialize emotion count
     for (var emotion in voiceEmo.toSet()) {
       emotionAccumulatedCounts[emotion] = 0;
-      emotionCountMap[emotion] = [FlSpot(0, 0)]; // 시작점을 (0, 0)으로 설정
+      emotionCountMap[emotion] = [FlSpot(0, 0)];
     }
 
-    //voiceEmo
-    // 각 x 좌표에서 감정별 누적 횟수 계산
+    // Accumulate emotions
     for (var i = 0; i < voiceEmo.length; i++) {
       final emotion = voiceEmo[i];
       emotionAccumulatedCounts[emotion] = emotionAccumulatedCounts[emotion]! + 1;
 
-      // 모든 감정에 대해 현재 누적 횟수 업데이트
+      // Update spots for each emotion
       for (var emo in emotionAccumulatedCounts.keys) {
         emotionCountMap[emo]!.add(FlSpot(i.toDouble() + 1, emotionAccumulatedCounts[emo]!.toDouble()));
       }
     }
 
     final lineBarsData = emotionCountMap.entries.map((entry) {
-      // 감정에 따른 색상 지정
-      Color color;
-      switch (entry.key) {
-        case "중립":
-          color = Colors.grey;  // 중립은 회색
-          break;
-        case "슬픔":
-          color = Colors.blue;  // 슬픔은 파란색
-          break;
-        case "분노":
-          color = Colors.red;
-          break;
-        case "행복":
-          color = Colors.green;
-          break;
-        case "당황":
-          color = Colors.yellow;
-          break;
-        case "상처":
-          color = Colors.orange;
-          break;
-        case "불안":
-          color = Colors.purple;
-          break;
-
-        default:
-          color = Colors.black;  // 기본값은 검정색
-          break;
-      }
+      Color color = entry.key == "중립" ? Colors.grey :
+      entry.key == "슬픔" ? Colors.blue :
+      entry.key == "분노" ? Colors.red :
+      entry.key == "행복" ? Colors.green :
+      entry.key == "당황" ? Colors.yellow :
+      entry.key == "상처" ? Colors.orange :
+      entry.key == "불안" ? Colors.purple : Colors.black;  // 색상 매핑
 
       return LineChartBarData(
-        isCurved: false, // 부드럽게 연결 여부
+        isCurved: false,
         color: color,
         barWidth: 4,
         dotData: FlDotData(show: true),
@@ -204,78 +151,133 @@ class _LineChart extends StatelessWidget {
     }).toList();
 
     return LineChartData(
-      lineTouchData: LineTouchData(
-        handleBuiltInTouches: true,
-        touchTooltipData: LineTouchTooltipData(
-          getTooltipColor: (touchedSpot) => Colors.blueGrey.withOpacity(0.8),
-        ),
-      ),
+      lineTouchData: _getLineTouchData(),  // 클릭->감정,수치 함께 보여줌
       gridData: FlGridData(show: true),
       titlesData: FlTitlesData(
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            getTitlesWidget: (value, meta) {
-              final style = TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              );
-              return Text(value.toInt().toString(), style: style);
-            },
-            showTitles: true,
-            reservedSize: 32,
-            interval: 1,
-          ),
+        bottomTitles: AxisTitles(sideTitles: bottomTitles),
+        leftTitles: AxisTitles(sideTitles: leftTitles()),
+        topTitles: AxisTitles(
+          sideTitles: SideTitles(showTitles: false), // 상단 제목을 표시하지 않음
         ),
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(
-            getTitlesWidget: (value, meta) {
-              return Text('${value.toInt()}', style: TextStyle(fontWeight: FontWeight.bold));
-            },
-            showTitles: true,
-            reservedSize: 40,
-            interval: 1,
-          ),
+        rightTitles: AxisTitles(
+          sideTitles: SideTitles(showTitles: false), // 우측 제목을 표시하지 않음
         ),
       ),
       borderData: FlBorderData(
         show: true,
-        border: Border(
-          bottom: BorderSide(color: Colors.blueGrey.withOpacity(0.5), width: 4),
-          left: BorderSide(color: Colors.blueGrey.withOpacity(0.5), width: 4),
-          right: const BorderSide(color: Colors.transparent),
-          top: const BorderSide(color: Colors.transparent),
+        border: Border(bottom: BorderSide(color: Colors.blueGrey.withOpacity(0.5), width: 4), // 아래쪽 테두리 색상 및 두께 지정
+          left: BorderSide(color: Colors.blueGrey.withOpacity(0.5), width: 4),    // 왼쪽 테두리 색상 및 두께 지정
         ),
       ),
+
       minX: 0,
       maxX: maxX,
       minY: 0,
-      maxY: 7,
+      maxY: emotionAccumulatedCounts.values.isNotEmpty ? (emotionAccumulatedCounts.values.reduce(max) + 2).toDouble() : 7,
       lineBarsData: lineBarsData,
     );
   }
 
-  LineTouchData get lineTouchData1 => LineTouchData(
-    handleBuiltInTouches: true,
-    touchTooltipData: LineTouchTooltipData(
-      getTooltipColor: (touchedSpot) => Colors.blueGrey.withOpacity(0.8),
-    ),
-  );
+  LineChartData AbsGraph(double maxX) {
+    final emotionCountMap = <String, List<FlSpot>>{};
+    Map<String, int> emotionAccumulatedCounts = {};
 
-  FlTitlesData get titlesData1 => FlTitlesData(
-    bottomTitles: AxisTitles(
-      sideTitles: bottomTitles,
-    ),
-    rightTitles: AxisTitles(
-      sideTitles: SideTitles(showTitles: false),
-    ),
+    // Initialize emotion count
+    for (var emotion in absEmo.toSet()) {
+      emotionAccumulatedCounts[emotion] = 0;
+      emotionCountMap[emotion] = [FlSpot(0, 0)];
+    }
 
-    topTitles:AxisTitles(
-      sideTitles: SideTitles(showTitles: false),
-    ),
-    leftTitles: AxisTitles(
-      sideTitles: leftTitles(),
-    ),
-  );
+    // Accumulate emotions
+    for (var i = 0; i < absEmo.length; i++) {
+      final emotion = absEmo[i];
+      emotionAccumulatedCounts[emotion] = emotionAccumulatedCounts[emotion]! + 1;
+
+      // Update spots for each emotion
+      for (var emo in emotionAccumulatedCounts.keys) {
+        emotionCountMap[emo]!.add(FlSpot(i.toDouble() + 1, emotionAccumulatedCounts[emo]!.toDouble()));
+      }
+    }
+
+    final lineBarsData = emotionCountMap.entries.map((entry) {
+      Color color = entry.key == "중립" ? Colors.grey :
+      entry.key == "슬픔" ? Colors.blue :
+      entry.key == "분노" ? Colors.red :
+      entry.key == "행복" ? Colors.green :
+      entry.key == "당황" ? Colors.yellow :
+      entry.key == "상처" ? Colors.orange :
+      entry.key == "불안" ? Colors.purple : Colors.black;  // 색상 매핑
+
+      return LineChartBarData(
+        isCurved: false,
+        color: color,
+        barWidth: 4,
+        dotData: FlDotData(show: true),
+        belowBarData: BarAreaData(show: false),
+        spots: entry.value,
+      );
+    }).toList();
+
+    return LineChartData(
+      lineTouchData: _getLineTouchData(),  // 클릭->감정,수치 함께 보여줌
+      gridData: FlGridData(show: true),
+      titlesData: FlTitlesData(
+        bottomTitles: AxisTitles(sideTitles: bottomTitles),
+        leftTitles: AxisTitles(sideTitles: leftTitles()),
+        topTitles: AxisTitles(
+          sideTitles: SideTitles(showTitles: false), // 상단 제목을 표시하지 않음
+        ),
+        rightTitles: AxisTitles(
+          sideTitles: SideTitles(showTitles: false), // 우측 제목을 표시하지 않음
+        ),
+      ),
+      borderData: FlBorderData(
+        show: true,
+        border: Border(bottom: BorderSide(color: Colors.blueGrey.withOpacity(0.5), width: 4), // 아래쪽 테두리 색상 및 두께 지정
+          left: BorderSide(color: Colors.blueGrey.withOpacity(0.5), width: 4),    // 왼쪽 테두리 색상 및 두께 지정
+        ),
+      ),
+
+      minX: 0,
+      maxX: maxX,
+      minY: 0,
+      maxY: emotionAccumulatedCounts.values.isNotEmpty ? (emotionAccumulatedCounts.values.reduce(max) + 2).toDouble() : 7,
+      lineBarsData: lineBarsData,
+    );
+  }
+
+  // 그래프 터치했을 때, 감정 수치 보여주기
+  LineTouchData _getLineTouchData() {
+    return LineTouchData(
+      touchTooltipData: LineTouchTooltipData(
+        getTooltipColor: (touchedSpot) => Colors.black54.withOpacity(0.8),
+        getTooltipItems: (List<LineBarSpot> touchedSpots) {
+          return touchedSpots.map((LineBarSpot spot) {
+            final String emotion = spot.bar.color == Colors.grey
+                ? "중립"
+                : spot.bar.color == Colors.blue
+                ? "슬픔"
+                : spot.bar.color == Colors.red
+                ? "분노"
+                : spot.bar.color == Colors.green
+                ? "행복"
+                : spot.bar.color == Colors.yellow
+                ? "당황"
+                : spot.bar.color == Colors.orange
+                ? "상처"
+                : spot.bar.color == Colors.purple
+                ? "불안"
+                : "기타";  // 기본값 추가
+            return LineTooltipItem(
+              '$emotion: ${spot.y}',  // 소수점 둘째자리까지 표시
+              TextStyle(color: spot.bar.color, fontWeight: FontWeight.bold),
+            );
+          }).toList();
+        },
+      ),
+      handleBuiltInTouches: true,
+    );
+  }
 
 
   Widget leftTitleWidgets(double value, TitleMeta meta) {
@@ -408,9 +410,10 @@ class LineChartSample1 extends StatefulWidget {
   final String chatCount;
   final List<String> textEmo;
   final List<String> voiceEmo;
+  final List<String> absEmo;
 
   const LineChartSample1({super.key,
-    required this.chatCount, required this.textEmo,required this.voiceEmo}); // Constructor 수정
+    required this.chatCount, required this.textEmo,required this.voiceEmo,required this.absEmo}); // Constructor 수정
 
   @override
   State<LineChartSample1> createState() => LineChartSample1State();
@@ -418,50 +421,71 @@ class LineChartSample1 extends StatefulWidget {
 
 class LineChartSample1State extends State<LineChartSample1> {
   late bool isShowingMainData;
+  late GraphType currentGraphType;
 
   @override
   void initState() {
     super.initState();
     isShowingMainData = true;
+    currentGraphType = GraphType.text;
   }
 
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 1.23,
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          // 버튼을 추가합니다.
+          ButtonBar(
+            alignment: MainAxisAlignment.center,
             children: <Widget>[
-              const SizedBox(height: 37),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 16, left: 6),
-                  child: _LineChart(
-                    isShowingMainData: isShowingMainData,
-                    chatCount: widget.chatCount,
-                    textEmo: widget.textEmo,
-                    voiceEmo: widget.voiceEmo,
-                  ),
-                ),
+              IconButton(
+                icon: Icon(Icons.text_fields_rounded, size: 24), // 아이콘과 크기 설정
+                onPressed: () {
+                  setState(() {
+                    currentGraphType = GraphType.text;
+                  });
+                },
+                tooltip: '텍스트 감정', // 툴팁 추가
               ),
-              const SizedBox(height: 10),
+              IconButton(
+                icon: Icon(Icons.keyboard_voice_rounded, size: 24), // 아이콘과 크기 설정
+                onPressed: () {
+                  setState(() {
+                    currentGraphType = GraphType.voice;
+                  });
+                },
+                tooltip: '음성 감정', // 툴팁 추가
+              ),
+              IconButton(
+                icon: Icon(Icons.auto_graph_rounded, size: 24), // 아이콘과 크기 설정
+                onPressed: () {
+                  setState(() {
+                    currentGraphType = GraphType.abs;
+                  });
+                },
+                tooltip: '통합 감정', // 툴팁 추가
+              ),
             ],
           ),
-          IconButton(
-            icon: Icon(
-              Icons.refresh,
-              color: Colors.white.withOpacity(isShowingMainData ? 1.0 : 0.5),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16, left: 6),
+              child: _LineChart(
+                graphType: currentGraphType,
+                chatCount: widget.chatCount,
+                textEmo: widget.textEmo,
+                voiceEmo: widget.voiceEmo,
+                absEmo: widget.absEmo,
+              ),
             ),
-            onPressed: () {
-              setState(() {
-                isShowingMainData = !isShowingMainData;
-              });
-            },
-          )
+          ),
+          const SizedBox(height: 10),
         ],
       ),
     );
   }
+
 }

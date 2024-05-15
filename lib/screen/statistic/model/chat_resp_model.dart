@@ -1,5 +1,3 @@
-import 'dart:io';
-
 class ChatRespModel{
   final String message;
   final int emotion;

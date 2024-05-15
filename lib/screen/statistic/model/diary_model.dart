@@ -9,7 +9,7 @@ class DiaryModel {
   final List<String>? textEmotion;
   final List<String>? speechEmotion;
   final int? chatCount;
-  final List<int>? absEmotion;
+  final List<String>? absEmotion;
 
   DiaryModel({
     this.userId,
@@ -33,7 +33,7 @@ class DiaryModel {
       textEmotion: json['textEmotion'] != null ? List<String>.from(json['textEmotion']) : [],
       speechEmotion: json['speechEmotion'] != null ? List<String>.from(json['speechEmotion']) : [],
       chatCount: json['chatCount'] ?? 0,
-      absEmotion: json['absEmotion'] != null ? List<int>.from(json['absEmotion']) : [],
+      absEmotion: json['absEmotion'] != null ? List<String>.from(json['absEmotion']) : [],
     );
   }
 }

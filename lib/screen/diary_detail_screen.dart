@@ -1,12 +1,10 @@
 import 'dart:convert';
 import 'package:capstone_frontend/screen/statistic/line_chart_sample1.dart';
-import 'package:capstone_frontend/screen/statistic/model/diary_item_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
 import 'package:capstone_frontend/screen/statistic/pie_chart_sample2.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 import '../const/default_sliver_padding.dart';
 import 'package:capstone_frontend/const/api_utils.dart';
 
@@ -28,37 +26,6 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
     setState(() {
       _showEmotionSliver = !_showEmotionSliver; // 토글
     });
-  }
-
-  Future<List<DiaryItem>> sendDiaryToBackend(String userId, String date, String month, String limit) async {
-    final resp = await http.post(Uri.parse('$ip/Search_Diary_api/searchdiary'),
-        headers: {
-          'content-type': 'application/json',
-        },
-        body: jsonEncode({
-          'userId': userId,
-          'date': date,
-          'month': month,
-          'limit': limit,
-        }));
-
-    print('Status Code: ${resp.statusCode}');
-    print('Response Body: ${resp.body}');
-
-    // 상태 코드 검사 추가
-    if (resp.statusCode == 200) {
-      // print(resp.body);
-      // print('가져오기 성공');
-      // print('가져오기${jsonData.map((item) => PhotoModel.fromJson(item)).toList()}');
-      List<dynamic> jsonData = jsonDecode(resp.body);
-      print(jsonData.length);
-      return jsonData.map((item) => DiaryItem.fromJson(item)).toList();
-    } else {
-      print('Failed to load photo with status code: ${resp.statusCode}');
-      print('Error body: ${resp.body}');
-      throw Exception(
-          'Failed to load photo with status code: ${resp.statusCode}');
-    }
   }
 
 
@@ -100,10 +67,6 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
 
   // 스레드 내 감정변화 그래프
   DefaultSliverContainer _emotionSliver() {
-    final date = widget!.photoDetail.date;
-    final month = DateFormat('MM').format(date!);
-    final day = DateFormat('yyyy-MM-dd').format(date);
-    print('date: $date, month: $month, day: $day');
     return DefaultSliverContainer(
       height: 350,
       child: Column(
@@ -115,26 +78,12 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
                   chatCount: widget.photoDetail.chatCount.toString(),
                   textEmo: widget.photoDetail.textEmotion!.cast<String>(),
                   voiceEmo: widget.photoDetail.speechEmotion!.cast<String>(),
+                  absEmo: widget.photoDetail.absEmotion!.cast<String>(),
                 ),
               ],
             ),
     );
   }
-
-  // // 감정 비율 그래프
-  // DefaultSliverContainer _rateSliver() {
-  //   return DefaultSliverContainer(
-  //     height: 180,
-  //     child: Column(
-  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         Text('감정 비율 그래프'),
-  //         PieChartSample2(),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   // 그림
   DefaultSliverContainer _pictureSliver() {
@@ -179,19 +128,18 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween, // 양 끝에 위젯 배치
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('피드백'), // 왼쪽에 배치
+              Text('피드백'),
               Expanded(
-                // 중간 공간을 채움
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end, // 오른쪽 정렬
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
-                      onPressed: _toggleEmotionSliver, // 토글 함수 연결
+                      onPressed: _toggleEmotionSliver,
                       child: const Text('감정 변화 그래프 보기'),
                     ),
-                    Icon(Icons.show_chart), // 그래프 아이콘
+                    Icon(Icons.show_chart),
                   ],
                 ),
               ),
@@ -199,7 +147,7 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
           ),
           Expanded(
             child: PieChartSample2(
-              emotionList: widget.photoDetail.textEmotion!,
+              emotionList: widget.photoDetail.absEmotion!,
             ),
           ),
           Row(

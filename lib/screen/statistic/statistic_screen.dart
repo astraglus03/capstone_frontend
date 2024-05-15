@@ -1,16 +1,17 @@
-import 'dart:convert';
-import 'dart:typed_data';
 import 'package:capstone_frontend/const/api_utils.dart';
 import 'package:capstone_frontend/const/currentuser_model.dart';
 import 'package:capstone_frontend/const/default_sliver_padding.dart';
 import 'package:capstone_frontend/login/kakao_login.dart';
 import 'package:capstone_frontend/login/main_view_model.dart';
+import 'package:capstone_frontend/screen/home/month_emotion_resp_model.dart';
 import 'package:capstone_frontend/screen/statistic/bar_chart_sample7.dart';
 import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone_frontend/screen/statistic/photoDetailScreen.dart';
+import 'package:shimmer/shimmer.dart';
 import '../diary_detail_screen.dart';
-import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class StatisticScreen extends StatefulWidget {
   const StatisticScreen({super.key});
@@ -26,6 +27,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
   final viewmodel = MainViewModel(KakaoLogin());
   String? userId = UserManager().getUserId();
   final String limit = '2';
+  final dio = Dio();
 
   @override
   Widget build(BuildContext context) {
@@ -83,10 +85,10 @@ class _StatisticScreenState extends State<StatisticScreen> {
 
   Future<CurrentUser?> checkCurrentUser(String userId) async {
     try {
-      final resp = await http.get(Uri.parse('$ip/userinfo/userinfo/$userId'));
+      final resp = await dio.get('$ip/userinfo/userinfo/$userId');
+
       if (resp.statusCode == 200) {
-        var data = jsonDecode(resp.body);
-        return CurrentUser.fromJson(data);
+        return CurrentUser.fromJson(resp.data);
         // print("사용자 ID: ${data['userId']}");
         // print("닉네임: ${data['nickname']}");
         // print("프로필 이미지 URL: ${data['profileImage']}");
@@ -105,7 +107,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
         future: checkCurrentUser(userId!),
         builder: (_, AsyncSnapshot<CurrentUser?> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return _buildloginskeletonUI();
           } else if (snapshot.hasError) {
             return Center(child: Text('데이터를 불러오는 중 에러가 발생했습니다.'));
           } else if (snapshot.hasData) {
@@ -183,7 +185,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
               ],
             );
           } else {
-            return Center(child: Text("데이터가 없습니다")); // 데이터 없음 표시
+            return _buildloginskeletonUI();
           }
         },
       ),
@@ -191,25 +193,20 @@ class _StatisticScreenState extends State<StatisticScreen> {
   }
 
   Future<List<DiaryModel>> getPhoto(String userId, String date, String month, String limit) async {
-    final resp = await http.post(Uri.parse('$ip/Search_Diary_api/searchdiary'),
-        headers: {
-          'content-type': 'application/json',
-        },
-        body: jsonEncode({
-          'userId': userId,
-          'date': date,
-          'month': month,
-          'limit': limit,
-        }));
+    final resp = await dio.post('$ip/Search_Diary_api/searchdiary', data: {
+      'userId': userId,
+      'date': date,
+      'month': month,
+      'limit': limit,
+    });
     if (resp.statusCode == 200) {
-      // print(resp.body);
       // print('가져오기 성공');
       // print('가져오기${jsonData.map((item) => PhotoModel.fromJson(item)).toList()}');
-      List<dynamic> jsonData = jsonDecode(resp.body);
-      return jsonData.map((item) => DiaryModel.fromJson(item)).toList();
+      List<dynamic> data = resp.data;
+      return data.map((e) => DiaryModel.fromJson(e)).toList();
     } else {
       print('Failed to load photo with status code: ${resp.statusCode}');
-      print('Error body: ${resp.body}');
+      print('Error body: ${resp.data}');
       throw Exception(
           'Failed to load photo with status code: ${resp.statusCode}');
     }
@@ -224,59 +221,60 @@ class _StatisticScreenState extends State<StatisticScreen> {
           if (snapshot.hasError) {
             print('여기부분${snapshot.error}');
             return Center(child: Text('데이터를 불러오는 중 에러가 발생했습니다.'));
+          } else if (snapshot.connectionState == ConnectionState.waiting) {
+            return _buildDiaryContainerUI();
           } else if (snapshot.hasData) {
             return Row(
               children: [
                 Expanded(
                   flex: 9,
                   child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: snapshot.data!.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => DiaryDetailScreen(
-                                    photoDetail: snapshot.data![index],
-                                  ),
-                                ),
-                              );
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Image.memory(
-                                snapshot.data![index].image ?? Uint8List(0),
-                                width: 150,
-                                height: 150,
-                                fit: BoxFit.cover,
+                    scrollDirection: Axis.horizontal,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DiaryDetailScreen(
+                                photoDetail: snapshot.data![index],
                               ),
                             ),
                           );
                         },
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PhotoDetailScreen(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Image.memory(
+                            snapshot.data![index].image!,
+                            width: 150,
+                            height: 150,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       );
                     },
-                    child: Text('더보기'),
-                  )
+                  ),
                 ),
+                Expanded(
+                    flex: 1,
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PhotoDetailScreen(),
+                          ),
+                        );
+                      },
+                      child: Text('더보기'),
+                    )),
               ],
             );
           } else {
             return Center(
-              child: CircularProgressIndicator(),
+              child: Text('데이터가 없습니다.'),
             ); // 데이터 없음 표시
           }
         },
@@ -284,29 +282,176 @@ class _StatisticScreenState extends State<StatisticScreen> {
     );
   }
 
+  // 한 달 감정 카운트 그래프
+  Future<List<DiaryMonthModel>> sendDiaryToBackend(String userId, String month) async {
+    try {
+
+      final resp = await dio.post('$ip/Count_Month_Emotion/countmonthemotion', data: {
+        'userId': userId,
+        'month': month,
+      });
+
+
+      if (resp.statusCode == 200) {
+        Map<String, dynamic> jsonData = resp.data;
+        // print([MonthEmotionRespModel.fromJson(jsonData)]);
+        return [DiaryMonthModel.fromJson(jsonData)]; // 단일 객체를 리스트로 변환
+      } else {
+        print('Failed to load data with status code: ${resp.statusCode}');
+        return Future.error('Error loading data');
+      }
+    } catch (e) {
+      print('An exception occurred: $e');
+      throw Exception('Failed to communicate with server');
+    }
+  }
+
+  // 한 달 감정 카운트 그래프
+
   DefaultSliverContainer _emotionSliver() {
     return DefaultSliverContainer(
-      height: 350,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      height: 470,
+      child: FutureBuilder<List<DiaryMonthModel>>(
+          future: sendDiaryToBackend(UserManager().getUserId().toString(), DateFormat('yyyy-MM').format(DateTime.now())),
+          builder: (_, AsyncSnapshot<List<DiaryMonthModel>> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return _buildGraphSkeletonUI();
+            } else if(snapshot.hasData){
+              // print(snapshot.data!);
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('1개월 감정 변화 그래프'),
+                  BarChartSample7(
+                    model: snapshot.data!,
+                    onMessageReceived: (receivedMessage) {
+                      print("피드백 message: $receivedMessage");
+                    },
+                  ),
+                ],
+              );
+            } else {
+              return Center(
+                child: Text('데이터가 없습니다'),
+              );
+            }
+          }),
+    );
+  }
+
+  Widget _buildloginskeletonUI() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Stack(
         children: [
-          Text('1개월 감정 변화 그래프'),
-          BarChartSample7(),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 텍스트가 아닌 아이콘으로 대체 예정
-              Text('놀람'),
-              Text('공포'),
-              Text('분노'),
-              Text('중립'),
-              Text('행복'),
-              Text('혐오'),
+              Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: CircleAvatar(
+                  radius: 40,
+                  backgroundColor: Colors.grey[200], // 스켈레톤 색상 지정
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double.infinity, // 전체 너비 사용
+                      height: 20, // 적당한 높이 지정
+                      color: Colors.grey[200], // 스켈레톤 색상 지정
+                    ),
+                    SizedBox(height: 10),
+                    Container(
+                      width: 100, // 로그아웃 버튼 스켈레톤 크기
+                      height: 20, // 로그아웃 버튼 스켈레톤 높이
+                      color: Colors.grey[300], // 스켈레톤 색상 지정
+                    ),
+                    SizedBox(height: 15),
+                    Container(
+                      width: double.infinity, // 전체 너비 사용
+                      height: 40, // 입력란 스켈레톤 높이
+                      color: Colors.grey[200], // 스켈레톤 색상 지정
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
+          Positioned(
+            right: 5,
+            child: Icon(
+              Icons.edit,
+              color: Colors.grey[300], // 아이콘 스켈레톤 색상 지정
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDiaryContainerUI() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Row(
+        children: [
+          Expanded(
+            flex: 9,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: 2,
+              itemBuilder: (BuildContext context, int index) {
+                return Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Container(
+                    width: 150,
+                    height: 150,
+                    color: Colors.grey[300],
+                  ),
+                );
+              },
+            ),
+          ),
+          Expanded(
+              flex: 1,
+              child: TextButton(
+                onPressed: () {
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (context) => PhotoDetailScreen(),
+                  //   ),
+                  // );
+                },
+                child: Container(
+                  color: Colors.grey[300],
+                  child: Text('더보기'),
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGraphSkeletonUI() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        height: 350,
+        color: Colors.grey[300],
+        child: Container(
+          color: Colors.grey[300],
+        ),
+        // BarChartSample7(
+        //   model: snapshot.data!,
+        // ),
       ),
     );
   }

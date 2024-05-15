@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:capstone_frontend/const/api_utils.dart';
-import 'package:capstone_frontend/screen/chatbot/chat_resp_model.dart';
-import 'package:capstone_frontend/screen/chatbot/chat_send_model.dart';
-import 'package:capstone_frontend/screen/chatbot/chat_threadid.dart';
+import 'package:capstone_frontend/screen/statistic/model/chat_create_diary_model.dart';
+import 'package:capstone_frontend/screen/statistic/model/chat_resp_model.dart';
+import 'package:capstone_frontend/screen/statistic/model/chat_send_model.dart';
+import 'package:capstone_frontend/screen/main_screen.dart';
+import 'package:capstone_frontend/screen/statistic/model/chat_threadid_model.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_sound/flutter_sound.dart';
@@ -24,6 +27,7 @@ class ChatbotScreen extends StatefulWidget {
 
 class _ChatbotScreenState extends State<ChatbotScreen> {
 
+  final dio = Dio();
   //음성 녹음
   late FlutterSoundRecorder audioRecord;
   late audio_players.AudioPlayer audioPlay;
@@ -34,18 +38,27 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   bool is_Transcribing = false;
   just_audio.AudioPlayer audioPlayer = just_audio.AudioPlayer();
   String threadId = '';
+  String message = '';
   String message1 = '';
   int emotion = 0;
   int status = 0;
+  int count = 0;
 
+  final ChatUser _currentUser =
+  ChatUser(id: '1', firstName: 'Kim', lastName: 'KeonDong');
+  final ChatUser _gptChatUser =
+  ChatUser(id: '2', firstName: 'Chat', lastName: 'Gpt');
+
+  final List<ChatMessage> _messages = <ChatMessage>[];
+  final List<ChatUser> _typingUsers = <ChatUser>[];
 
   @override
   void initState() {
-    super.initState();
     audioPlay = audio_players.AudioPlayer();
     audioRecord = FlutterSoundRecorder();
     audioPath = '';
     setPermissions();
+    super.initState();
   }
 
   @override
@@ -64,8 +77,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     setState(() {
       is_Transcribing = true;
     });
-    final serviceAccount = ServiceAccount.fromString(
-        '${(await rootBundle.loadString('asset/stt-test-418715-4b9278f2d459.json'))}');
+    final serviceAccount = ServiceAccount.fromString('${(await rootBundle.loadString('asset/stt-test-418715-4b9278f2d459.json'))}');
     final speechToText = SpeechToText.viaServiceAccount(serviceAccount);
     final config = RecognitionConfig(
         encoding: AudioEncoding.LINEAR16,
@@ -73,13 +85,17 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         enableAutomaticPunctuation: true,
         sampleRateHertz: 16000,
         audioChannelCount: 1,
-        languageCode: 'ko-KR');
-
+        languageCode: 'ko-KR'
+    );
     final audio = await _getAudioContent(audioPath);
+    print(audioPath);
     await speechToText.recognize(config, audio).then((value) {
+      print(value.results);
       if (value.results.isNotEmpty) {
         setState(() {
+          _typingUsers.remove(_currentUser);
           content = value.results.map((e) => e.alternatives.first.transcript).join('\n');
+          print('음성 인식 결과: $content');
           ChatMessage message = ChatMessage(
             user: _currentUser,
             createdAt: DateTime.now(),
@@ -87,7 +103,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           );
           getChatResponse(message);
         });
-      } else {
+      }
+      else {
         setState(() {
           content = '음성 인식 결과가 없습니다. 다시 시도해주세요.';
         });
@@ -120,9 +137,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       await audioRecord.startRecorder(toFile: audioPath);
       setState(() {
         isRecording = true;
+        _typingUsers.add(_currentUser);
       });
+      print('녹음 시작, 경로: $audioPath');
     } catch (e) {
-      // print('Error Start Recording : $e');
+      print('Error Start Recording : $e');
       print('시작 에러');
     }
   }
@@ -130,21 +149,23 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   Future<void> stopRecording() async {
     try {
       String? path = await audioRecord.stopRecorder();
-      // print(path);
+
       setState(() {
         isRecording = false;
       });
       await audioRecord.closeRecorder();
+      print('녹음기가 정상적으로 닫혔습니다.');
+
       if(_messages.isEmpty){
         await createChatThread(UserManager().getUserId()!);
       }
-      await transcribe();
 
+      await transcribe();
     } catch (e) {
-      print('Error Stopping record : $e');
-      print('정지 에러');
+      print('녹음 중지 중 오류 발생: $e');
     }
   }
+
 
   //Clova Api 연결, 문자, 감정, 감정의 강도, 음색
   Future<Uint8List> clovaTTS(String text, int emotion, int volume,  int emotionStrength, int alpha, int speed) async {
@@ -202,22 +223,22 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     audioPlayer.play();
   }
 
-  Future<ChatThreadId> createChatThread(String userId) async {
-    final response = await http.post(
-      Uri.parse('$ip/Create_Chatroom/chatroom'),
-      headers:{'Content-Type': 'application/json',},
-      body: jsonEncode({'userId': userId}),
-    );
+  Future<ChatThreadIdModel> createChatThread(String userId) async {
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      ChatThreadId chatThreadId = ChatThreadId.fromJson(data);
+    final resp = await dio.post('$ip/Create_Chatroom/chatroom', data: {
+      'userId': userId,
+    });
+
+    if (resp.statusCode == 200) {
+      final data = resp.data;
+      ChatThreadIdModel chatThreadId = ChatThreadIdModel.fromJson(data);
       setState(() {
         threadId = chatThreadId.threadId;
+        print('threadid: $threadId');
       });
-      return data['chat_thread'];
-    } else if (response.statusCode == 400) {
-      final data = jsonDecode(response.body);
+      return chatThreadId;
+    } else if (resp.statusCode == 400) {
+      final data = resp.data;
       throw Exception('Error: ${data['message']}');
     } else {
       throw Exception('Failed to connect to the server');
@@ -226,9 +247,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   Future<ChatRespModel?> sendMessage(ChatSendModel model) async {
     var request = http.MultipartRequest('POST', Uri.parse('$ip/Send_Message_Dairy/model'))
-          ..fields['threadid'] = model.threadId
-          ..fields['userid'] = model.userId
-          ..fields['content'] = model.content;
+      ..fields['threadid'] = model.threadId
+      ..fields['userid'] = model.userId
+      ..fields['content'] = model.content;
+
     if (model.audioFile != null) {
       request.files.add(await http.MultipartFile.fromPath(
         'fileTest',
@@ -247,19 +269,46 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         emotion = respModel.emotion;
         status = respModel.status;
       });
-      print('서버로부터의 응답: ${data['message']}, 감정: ${data['emotion']}');
+      print('서버로부터의 응답: ${data['message']}, 감정: ${data['emotion']}, status: ${data['status']}');
+      if(status==1 && count==0) {
+        count = 1;
+        //status = 0;
+      }
+      else if(status == 1 && (count-1)>=0) {
+        count += 1;
+        status = 0;
+      }
+      print('count : $count');
+
     } else {
       print('메시지 전송 실패: 상태 코드 ${response.statusCode}');
     }
   }
 
-  final ChatUser _currentUser =
-      ChatUser(id: '1', firstName: 'Kim', lastName: 'KeonDong');
-  final ChatUser _gptChatUser =
-      ChatUser(id: '2', firstName: 'Chat', lastName: 'Gpt');
+  // 일기 생성 (육하원칙 완료되고 버튼 클릭했을 때)
+  Future<CreateDiaryModel> createDiary(String threadId, String userId, int count) async {
 
-  final List<ChatMessage> _messages = <ChatMessage>[];
-  final List<ChatUser> _typingUsers = <ChatUser>[];
+    final resp = await dio.post('$ip/Create_Diary_api/diary', data: {
+      'threadId': threadId,
+      'userId': userId,
+      'count': count,
+    });
+    if (resp.statusCode == 200) {
+      final data = resp.data;
+      CreateDiaryModel diaryCreate = CreateDiaryModel.fromJson(data);
+      setState(() {
+        message = diaryCreate.message;
+        print('message: $message');
+      });
+      return diaryCreate;
+    }
+    else if (resp.statusCode == 400) {
+      final data = resp.data;
+      throw Exception('Error: ${data['message']}');
+    } else {
+      throw Exception('Failed to connect to the server');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -274,36 +323,37 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         ),
         centerTitle: true,
         actions: [
-          TextButton(
-            onPressed: () {},
-            child: const Text(
-              '일기 작성',
-              style: TextStyle(
-                color: Colors.black,
-              ),
+          if (status == 1) // status == 1 && count>0
+            TextButton(
+              onPressed: () {
+                createDiary(threadId, UserManager().getUserId()!, count);
+                Navigator.push(context, MaterialPageRoute(builder: (context) => MainScreen())).then((_) {
+                });
+              },
+              child: const Text('일기 생성', style: TextStyle(color: Colors.black)),
             ),
-          ),
           keyboardMode ?? false
               ? IconButton(
-                  onPressed: () {
-                    setState(() {
-                      keyboardMode = false;
-                    });
-                  },
-                  icon: const Icon(Icons.mic_none_outlined),
-                )
+            onPressed: () {
+              setState(() {
+                keyboardMode = false;
+              });
+            },
+            icon: const Icon(Icons.mic_none_outlined),
+          )
               : IconButton(
-                  onPressed: () {
-                    setState(() {
-                      keyboardMode = true;
-                    });
-                  },
-                  icon: const Icon(Icons.keyboard_alt_outlined),
-                ),
+            onPressed: () {
+              setState(() {
+                keyboardMode = true;
+              });
+            },
+            icon: const Icon(Icons.keyboard_alt_outlined),
+          ),
         ],
       ),
       body: DashChat(
         messageOptions: const MessageOptions(
+          showCurrentUserAvatar: true,
           currentUserContainerColor: Colors.lightBlueAccent,
           containerColor: Color.fromRGBO(0, 166, 126, 1,),
           textColor: Colors.white,
@@ -328,23 +378,22 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             filled: true,
             fillColor: Colors.grey[100],
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           ),
         ),
         messages: _messages,
       ),
       floatingActionButton: keyboardMode == false
           ? Align(
-              alignment: const Alignment(0, 0.99),
-              child: FloatingActionButton(
-                onPressed: () =>
-                    isRecording ? stopRecording() : startRecording(),
-                backgroundColor: isRecording
-                    ? Colors.red
-                    : const Color.fromRGBO(0, 166, 126, 1),
-                child: const Icon(Icons.mic_none_outlined, size: 24),
-              ),
-            )
+        alignment: const Alignment(0, 0.99),
+        child: FloatingActionButton(
+          onPressed: () {
+            isRecording ? stopRecording() : startRecording();
+          },
+          backgroundColor: isRecording ? Colors.red : const Color.fromRGBO(0, 166, 126, 1),
+          child: const Icon(Icons.mic_none_outlined, size: 24),
+        ),
+      )
           : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
@@ -355,12 +404,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       _messages.insert(0, m);
       _typingUsers.add(_gptChatUser);
     });
-    // ChatSendModel sendModel = ChatSendModel(
-    //   UserManager().getUserId()!,
-    //   threadId,
-    //   m.text,
-    //   File(audioPath),
-    // );
     ChatSendModel sendModel = ChatSendModel(
       userId: UserManager().getUserId()!,
       threadId: threadId,
@@ -368,20 +411,20 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       audioFile: File(audioPath),
     );
 
-    sendMessage(sendModel).whenComplete(
-      () {
-        setState(() {
-          _messages.insert(0,
-            ChatMessage(
-              user: _gptChatUser,
-              createdAt: DateTime.now(),
-              text: message1,
-            ),
-          );
-          _typingUsers.remove(_gptChatUser);
-        });
-        // _playAudio(message1, emotion, 5, 2, 0,-5);
-      },
-    );
+    // API 호출을 통해 서버로부터 응답을 받습니다.
+    await sendMessage(sendModel);  // await을 추가하여 응답을 기다림
+
+    setState(() {
+      _messages.insert(0,
+        ChatMessage(
+          user: _gptChatUser,
+          createdAt: DateTime.now(),
+          text: message1,
+        ),
+      );
+      _typingUsers.remove(_gptChatUser);
+    });
+
+    //_playAudio(message1, emotion, 5, 2, 0, -5);  // volume, emotionStrength, alpha, speed
   }
 }

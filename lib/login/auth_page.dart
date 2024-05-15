@@ -21,7 +21,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     setupAnimations();
     listenToUserId();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showOverlay(context);  // 프레임이 완성된 후 로그인 화면을 보여줍니다.
+      _showOverlay(context);  // 로그인 페이지를 띄움
     });
   }
 

@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
-
 class DiaryDetailModel{
   final String? content;
   final List<String>? textEmotion;
@@ -26,9 +24,6 @@ class DiaryDetailModel{
     String base64String = json['image'];
     Uint8List image = base64Decode(base64String);
     return DiaryDetailModel(
-      // userId: baseModel.userId,
-      // date: baseModel.date,
-      // image: baseModel.image,
       userId: json['userId'],
       date: DateTime.parse(json['date']),
       image: image,

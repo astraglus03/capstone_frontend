@@ -35,4 +35,3 @@ class DefaultSliverContainer extends StatelessWidget {
     );
   }
 }
-

@@ -1,5 +1,4 @@
 import 'package:capstone_frontend/calendar/calendar.dart';
-import 'package:capstone_frontend/screen/chatbot/chatbot_screen.dart';
 import 'package:capstone_frontend/screen/home/home_screen.dart';
 import 'package:capstone_frontend/screen/statistic/statistic_screen.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +11,12 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+
+  @override
+  void initState(){
+    super.initState();
+  }
+
   final List<Widget> _MainWidgets = <Widget>[
     const HomeScreen(),
     const Calendar(),

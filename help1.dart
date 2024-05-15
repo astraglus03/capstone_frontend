@@ -3,6 +3,7 @@ import 'package:capstone_frontend/const/api_utils.dart';
 import 'package:capstone_frontend/screen/chatbot/chatbot_screen.dart';
 import 'package:capstone_frontend/screen/diary_detail_screen.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -37,7 +38,8 @@ class _HomeScreenState extends State<HomeScreen>
     super.initState();
     daysInMonth = _daysInMonth(currentDate);
     carouselController = CarouselController();
-    _animationcontroller = AnimationController(vsync: this, duration: Duration(milliseconds: 300));
+    _animationcontroller =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 300));
     _animationcontroller.addListener(() {
       setState(() {
         offsetY = _animationcontroller.value;
@@ -69,6 +71,8 @@ class _HomeScreenState extends State<HomeScreen>
       initialDate: currentDate,
       onDateChanged: (DateTime selectedDate) {
         setState(() {
+          print(selectedDate);
+          print(selectedDate.day);
           currentDate = DateTime(selectedDate.year, selectedDate.month);
           daysInMonth = _daysInMonth(currentDate);
           carouselController.jumpToPage(selectedDate.day - 1);
@@ -116,14 +120,11 @@ class _HomeScreenState extends State<HomeScreen>
     if (permission == LocationPermission.denied) {
     } else if (permission == LocationPermission.deniedForever) {
     } else {
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
       // print(position.latitude);
       // print(position.longitude);
 
-      _wf
-          .currentWeatherByLocation(position.latitude, position.longitude)
-          .then((w) {
+      _wf.currentWeatherByLocation(position.latitude, position.longitude).then((w) {
         if (mounted) {
           setState(() {
             _weather = w;
