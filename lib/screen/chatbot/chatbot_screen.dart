@@ -88,9 +88,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         languageCode: 'ko-KR'
     );
     final audio = await _getAudioContent(audioPath);
-    print(audioPath);
+    // print(audioPath);
     await speechToText.recognize(config, audio).then((value) {
-      print(value.results);
+      // print(value.results);
       if (value.results.isNotEmpty) {
         setState(() {
           _typingUsers.remove(_currentUser);
@@ -326,8 +326,33 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           if (status == 1) // status == 1 && count>0
             TextButton(
               onPressed: () {
-                createDiary(threadId, UserManager().getUserId()!, count);
-                Navigator.push(context, MaterialPageRoute(builder: (context) => MainScreen())).then((_) {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('일기 작성중...'),
+                      content: CircularProgressIndicator(),
+                    );
+                  },
+                );
+
+                createDiary(threadId, UserManager().getUserId()!, count).whenComplete(() {
+                  Navigator.pop(context);
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text("일기가 보내졌습니다!"),
+                      );
+                    },
+                  );
+
+                  Future.delayed(Duration(seconds: 2), () {
+                    Navigator.of(context).pop();
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => MainScreen()));
+                  });
                 });
               },
               child: const Text('일기 생성', style: TextStyle(color: Colors.black)),

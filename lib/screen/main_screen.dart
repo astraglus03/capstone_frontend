@@ -1,7 +1,9 @@
 import 'package:capstone_frontend/calendar/calendar.dart';
 import 'package:capstone_frontend/screen/home/home_screen.dart';
+import 'package:capstone_frontend/screen/statistic/model/emotion_manager.dart';
 import 'package:capstone_frontend/screen/statistic/statistic_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -20,7 +22,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _MainWidgets = <Widget>[
     const HomeScreen(),
     const Calendar(),
-    StatisticScreen(),
+    ChangeNotifierProvider(create: (context) => EmotionManager(), child: StatisticScreen()),
   ];
 
   int _index = 0;

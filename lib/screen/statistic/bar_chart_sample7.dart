@@ -17,10 +17,9 @@ enum GraphType {
 
 class BarChartSample7 extends StatefulWidget {
   final List<DiaryMonthModel> model;
-  final Function(String) onMessageReceived;
   final dio = Dio();
 
-  BarChartSample7({Key? key, required this.model, required this.onMessageReceived}) : super(key: key);
+  BarChartSample7({Key? key, required this.model}) : super(key: key);
 
   final shadowColor = const Color(0xFFCCCCCC);
   final dataList = [
@@ -279,7 +278,6 @@ class _BarChartSample7State extends State<BarChartSample7> {
       setState(() {
         message = monthRepEmo.feedback;
         print('message: $message');
-        widget.onMessageReceived(message);  // 콜백 함수 호출, 월간 피드백 statistic에 보내기
       });
       return monthRepEmo;
     }

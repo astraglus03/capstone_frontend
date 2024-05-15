@@ -1,11 +1,9 @@
-import 'dart:convert';
 import 'package:capstone_frontend/screen/statistic/model/schedule_resp_model.dart';
 import 'package:capstone_frontend/const/api_utils.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'utils.dart';
-import 'package:intl/intl.dart';
 
 class Calendar extends StatefulWidget {
   const Calendar({super.key});
@@ -28,28 +26,37 @@ class _CalendarState extends State<Calendar> {
   // };
   // Map<DateTime, String> emotionColors = {};
 
-  Future<List<ScheduleRespModel>> respSchedule(String userId, String date){
-    return dio.get('$ip/get_future_api/getfuture/$userId/$date', options: Options(
-        validateStatus: (status) => true
-    )).then((resp) {
-        print(resp.data);
-        if(resp.statusCode != 200) return <ScheduleRespModel>[];
-        return List<ScheduleRespModel>.from(resp.data.map((x) => ScheduleRespModel.fromJson(x)));
+  // Future<List<ScheduleRespModel>> respSchedule(String userId, String date){
+  //   return dio.get('$ip/get_future_api/getfuture/$userId/$date', options: Options(
+  //       validateStatus: (status) => true
+  //   )).then((resp) {
+  //       print(resp.data);
+  //       if(resp.statusCode != 200) return <ScheduleRespModel>[];
+  //       return List<ScheduleRespModel>.from(resp.data.map((x) => ScheduleRespModel.fromJson(x)));
+  //   });
+  // }
+
+  Future<List<ScheduleRespModel>> respSchedule(String userId){
+    return dio.get('$ip/get_future_api/getfuture/$userId').then((resp) {
+      if(resp.statusCode != 200) return <ScheduleRespModel>[];
+      return List<ScheduleRespModel>.from(resp.data.map((x) => ScheduleRespModel.fromJson(x)));
     });
   }
+
+
   void getSchedules() async {
-    List<ScheduleRespModel> schedules = await respSchedule(userId!, DateFormat('yyyy-MM').format(_focusedDay));
+    List<ScheduleRespModel> schedules = await respSchedule(userId!);
 
-    setState(() {
-      kEvents.clear();
-
-      for (var i in schedules) {
-        DateTime date = DateTime.parse(i.date);
-        List<Event> existingEvents = kEvents[date] ?? [];
-        existingEvents.add(Event(i.content));
-        kEvents[date] = existingEvents;
-      }
-    });
+    if(mounted){
+      setState(() {
+        for (var i in schedules) {
+          DateTime date = DateTime.parse(i.date);
+          List<Event> existingEvents = [];
+          existingEvents.add(Event(i.content));
+          kEvents[date] = existingEvents;
+        }
+      });
+    }
   }
 
 
@@ -143,7 +150,6 @@ class _CalendarState extends State<Calendar> {
             },
             onPageChanged: (focusedDay) {
               _focusedDay = focusedDay;
-              getSchedules();
             },
             calendarBuilders: CalendarBuilders(
               defaultBuilder: (context, day, focusedDay) {

@@ -6,9 +6,13 @@ import 'package:capstone_frontend/login/main_view_model.dart';
 import 'package:capstone_frontend/screen/home/month_emotion_resp_model.dart';
 import 'package:capstone_frontend/screen/statistic/bar_chart_sample7.dart';
 import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
+import 'package:capstone_frontend/screen/statistic/model/emotion_manager.dart';
+import 'package:capstone_frontend/screen/statistic/model/month_feedback_model.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone_frontend/screen/statistic/photoDetailScreen.dart';
+import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import '../diary_detail_screen.dart';
 import 'package:intl/intl.dart';
@@ -21,6 +25,7 @@ class StatisticScreen extends StatefulWidget {
 }
 
 class _StatisticScreenState extends State<StatisticScreen> {
+  late Future<List<DiaryMonthModel>> _emotionFuture;
   final TextEditingController memoController = TextEditingController();
   final FocusNode memoFocusNode = FocusNode();
   bool _isFocused = false; // 메모란에 포커스 여부
@@ -28,6 +33,8 @@ class _StatisticScreenState extends State<StatisticScreen> {
   String? userId = UserManager().getUserId();
   final String limit = '2';
   final dio = Dio();
+  String feedback = '';
+  String repEmo = '';
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +61,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
             _diaryInfoSliver(),
             _photoSliver(context),
             _emotionSliver(),
+            _feedbackSliver(),
           ],
         ),
       ),
@@ -63,9 +71,15 @@ class _StatisticScreenState extends State<StatisticScreen> {
   @override
   void initState() {
     super.initState();
-    memoFocusNode.addListener(() {
-      setState(() {
-        _isFocused = memoFocusNode.hasFocus; // Update the focus status
+    _emotionFuture = sendDiaryToBackend(UserManager().getUserId().toString(),
+        DateFormat('yyyy-MM').format(DateTime.now()));
+    _emotionFuture.then((data) {
+      String emo = translateEmotion(data[0].representEmotion.join(', '));
+      Provider.of<EmotionManager>(context, listen: false).setRepEmo(emo);
+      memoFocusNode.addListener(() {
+        setState(() {
+          _isFocused = memoFocusNode.hasFocus; // Update the focus status
+        });
       });
     });
   }
@@ -192,7 +206,8 @@ class _StatisticScreenState extends State<StatisticScreen> {
     );
   }
 
-  Future<List<DiaryModel>> getPhoto(String userId, String date, String month, String limit) async {
+  Future<List<DiaryModel>> getPhoto(
+      String userId, String date, String month, String limit) async {
     final resp = await dio.post('$ip/Search_Diary_api/searchdiary', data: {
       'userId': userId,
       'date': date,
@@ -275,7 +290,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
           } else {
             return Center(
               child: Text('데이터가 없습니다.'),
-            ); // 데이터 없음 표시
+            ); // 데이터 없음 표시ƒ
           }
         },
       ),
@@ -283,14 +298,14 @@ class _StatisticScreenState extends State<StatisticScreen> {
   }
 
   // 한 달 감정 카운트 그래프
-  Future<List<DiaryMonthModel>> sendDiaryToBackend(String userId, String month) async {
+  Future<List<DiaryMonthModel>> sendDiaryToBackend(
+      String userId, String month) async {
     try {
-
-      final resp = await dio.post('$ip/Count_Month_Emotion/countmonthemotion', data: {
+      final resp =
+          await dio.post('$ip/Count_Month_Emotion/countmonthemotion', data: {
         'userId': userId,
         'month': month,
       });
-
 
       if (resp.statusCode == 200) {
         Map<String, dynamic> jsonData = resp.data;
@@ -306,18 +321,16 @@ class _StatisticScreenState extends State<StatisticScreen> {
     }
   }
 
-  // 한 달 감정 카운트 그래프
-
   DefaultSliverContainer _emotionSliver() {
     return DefaultSliverContainer(
       height: 470,
       child: FutureBuilder<List<DiaryMonthModel>>(
-          future: sendDiaryToBackend(UserManager().getUserId().toString(), DateFormat('yyyy-MM').format(DateTime.now())),
+          future: sendDiaryToBackend(UserManager().getUserId().toString(),
+              DateFormat('yyyy-MM').format(DateTime.now())),
           builder: (_, AsyncSnapshot<List<DiaryMonthModel>> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return _buildGraphSkeletonUI();
-            } else if(snapshot.hasData){
-              // print(snapshot.data!);
+            } else if (snapshot.hasData) {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -325,9 +338,6 @@ class _StatisticScreenState extends State<StatisticScreen> {
                   Text('1개월 감정 변화 그래프'),
                   BarChartSample7(
                     model: snapshot.data!,
-                    onMessageReceived: (receivedMessage) {
-                      print("피드백 message: $receivedMessage");
-                    },
                   ),
                 ],
               );
@@ -337,6 +347,129 @@ class _StatisticScreenState extends State<StatisticScreen> {
               );
             }
           }),
+    );
+  }
+
+  Future<MonthFeedbackModel> sendRepEmo(String userId, String month_max_emotion) async {
+    try {
+      final resp = await dio.post('$ip/month_feedback_api/monthfeedback', data: {
+        'userId': userId,
+        'month_max_emotion': month_max_emotion,
+      });
+      print('여기 값');
+      print(resp.data);
+      if (resp.statusCode == 200) {
+        return MonthFeedbackModel.fromJson(resp.data);
+      } else {
+        print('Failed to load data with status code: ${resp.statusCode}');
+        return Future.error('Error loading data');
+      }
+    } catch (e) {
+      print('An exception occurred: $e');
+      throw Exception('Failed to communicate with server');
+    }
+  }
+
+  String translateEmotion(String emotions) {
+    Map<String, String> emotionMap = {
+      'netural': '중립',
+      'sad': '슬픔',
+      'happy': '행복',
+      'angry': '분노',
+      'embrassed': '당황',
+      'anxiety': '불안',
+      'hurt': '상처'
+    };
+
+    // 쉼표와 공백을 기준으로 문자열을 분리
+    List<String> emotionList = emotions.split(', ');
+
+    // 각각의 감정을 한국어로 변환
+    List<String> translatedEmotions = [];
+    for (String emotion in emotionList) {
+      translatedEmotions.add(emotionMap[emotion] ?? emotion);
+    }
+
+    // 변환된 감정 목록을 쉼표와 공백을 사용해 다시 조합
+    return translatedEmotions.join(', ');
+  }
+
+  // 한 달 감정 피드백
+  DefaultSliverContainer _feedbackSliver() {
+    return DefaultSliverContainer(
+      height: 250,
+      child: ListView(
+        children: <Widget>[
+          FutureBuilder<List<DiaryMonthModel>>(
+            future: _emotionFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+                repEmo = translateEmotion(snapshot.data![0].representEmotion.join(', '));
+                print(repEmo);
+                return  Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Text('한 달 동안의 대표 감정 :$repEmo', style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),),
+                );
+              } else if (snapshot.hasError) {
+                return Text('Error loading emotions');
+              } else {
+                return _buildFeedbackSkeletonUI();
+              }
+            },
+          ),
+          Consumer<EmotionManager>(
+            builder: (context, emotionManager, child) {
+              return FutureBuilder<MonthFeedbackModel>(
+                future: sendRepEmo(UserManager().getUserId().toString(), repEmo),
+                builder: (_, AsyncSnapshot<MonthFeedbackModel> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return _buildFeedbackSkeletonUI();
+                  } else if (snapshot.hasData) {
+                    return Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(snapshot.data!.feedback),
+                        ],
+                      ),
+                    );
+                  } else {
+                    return Center(
+                      child: _buildFeedbackSkeletonUI(),
+                    );
+                  }
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeedbackSkeletonUI(){
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              height: 150,
+              color: Colors.grey[300],
+            ),
+          ],
+        ),
+      ),
     );
   }
 

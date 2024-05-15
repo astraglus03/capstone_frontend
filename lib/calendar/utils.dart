@@ -12,25 +12,11 @@ class Event {
   String toString() => title;
 }
 
-
 /// Using a [LinkedHashMap] is highly recommended if you decide to use a map.
 final kEvents = LinkedHashMap<DateTime, List<Event>>(
   equals: isSameDay,
   hashCode: getHashCode,
 );
-  // ..addAll(_kEventSource);
-
-// // api에 따른 수정 필요
-// final _kEventSource = Map.fromIterable(List.generate(50, (index) => index),
-//     key: (item) => DateTime.utc(kFirstDay.year, kFirstDay.month, item * 5),
-//     value: (item) => List.generate(
-//         item % 4 + 1, (index) => Event('Event $item | ${index + 1}')))
-//   ..addAll({
-//     kToday: [
-//       Event('일정 나오는 곳. 일정1'),
-//       Event('일정 나오는 곳. 일정2'),
-//     ],
-//   });
 
 int getHashCode(DateTime key) {
   return key.day * 1000000 + key.month * 10000 + key.year;

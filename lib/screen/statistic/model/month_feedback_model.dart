@@ -8,7 +8,7 @@ class MonthFeedbackModel{
   });
   factory MonthFeedbackModel.fromJson(Map<String, dynamic> json) {
     return MonthFeedbackModel(
-      feedback:  json['feedback'],
+      feedback: json['feedback'],
     );
   }
 }
