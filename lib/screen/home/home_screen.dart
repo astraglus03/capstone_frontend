@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:capstone_frontend/calendar/utils.dart';
 import 'package:capstone_frontend/const/api_utils.dart';
 import 'package:capstone_frontend/screen/chatbot/chatbot_screen.dart';
+import 'package:capstone_frontend/screen/chatbot/q_and_a.dart';
 import 'package:capstone_frontend/screen/diary_detail_screen.dart';
 import 'package:capstone_frontend/screen/home/month_emotion_resp_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
@@ -306,7 +307,7 @@ class _HomeScreenState extends State<HomeScreen>
             icon: const ImageIcon(AssetImage('asset/conversation.png')),
             onPressed: () {
               Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (_) => ChatbotScreen()));
+                  .push(MaterialPageRoute(builder: (_) => QandAScreen()));
             }, // Q&A 페이지로 이동
           ),
         ],

@@ -9,7 +9,6 @@ import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/emotion_manager.dart';
 import 'package:capstone_frontend/screen/statistic/model/month_feedback_model.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone_frontend/screen/statistic/photoDetailScreen.dart';
 import 'package:provider/provider.dart';
@@ -485,7 +484,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
                 padding: const EdgeInsets.all(15.0),
                 child: CircleAvatar(
                   radius: 40,
-                  backgroundColor: Colors.grey[200], // 스켈레톤 색상 지정
+                  backgroundColor: Colors.grey[200],
                 ),
               ),
               Expanded(
@@ -494,15 +493,15 @@ class _StatisticScreenState extends State<StatisticScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: double.infinity, // 전체 너비 사용
-                      height: 20, // 적당한 높이 지정
-                      color: Colors.grey[200], // 스켈레톤 색상 지정
+                      width: double.infinity,
+                      height: 20,
+                      color: Colors.grey[200],
                     ),
                     SizedBox(height: 10),
                     Container(
-                      width: 100, // 로그아웃 버튼 스켈레톤 크기
-                      height: 20, // 로그아웃 버튼 스켈레톤 높이
-                      color: Colors.grey[300], // 스켈레톤 색상 지정
+                      width: 100,
+                      height: 20,
+                      color: Colors.grey[300],
                     ),
                     SizedBox(height: 15),
                     Container(
@@ -554,14 +553,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
           Expanded(
               flex: 1,
               child: TextButton(
-                onPressed: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //     builder: (context) => PhotoDetailScreen(),
-                  //   ),
-                  // );
-                },
+                onPressed: () {},
                 child: Container(
                   color: Colors.grey[300],
                   child: Text('더보기'),
@@ -582,9 +574,6 @@ class _StatisticScreenState extends State<StatisticScreen> {
         child: Container(
           color: Colors.grey[300],
         ),
-        // BarChartSample7(
-        //   model: snapshot.data!,
-        // ),
       ),
     );
   }
