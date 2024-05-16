@@ -6,7 +6,7 @@ import 'package:capstone_frontend/login/main_view_model.dart';
 import 'package:capstone_frontend/screen/home/month_emotion_resp_model.dart';
 import 'package:capstone_frontend/screen/statistic/bar_chart_sample7.dart';
 import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
-import 'package:capstone_frontend/screen/statistic/model/emotion_manager.dart';
+import 'package:capstone_frontend/provider/emotion_manager.dart';
 import 'package:capstone_frontend/screen/statistic/model/month_feedback_model.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';

@@ -7,13 +7,13 @@ import 'package:capstone_frontend/screen/diary_detail_screen.dart';
 import 'package:capstone_frontend/screen/home/month_emotion_resp_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:dio/dio.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:weather/weather.dart';
-import 'package:http/http.dart' as http;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -34,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen>
   late int daysInMonth;
   late CarouselController carouselController;
   final userId = UserManager().getUserId();
+  final dio = Dio();
 
   @override
   void initState() {
@@ -46,8 +47,17 @@ class _HomeScreenState extends State<HomeScreen>
         offsetY = _animationcontroller.value;
       });
     });
+
     // _getLocationAndWeather();
   }
+
+  // 슬라이드 넘길 때도 날짜 업데이트 하기 위한 코드
+  // void onPageChanged(int index, CarouselPageChangedReason reason) {
+  //   setState(() {
+  //     currentDate = DateTime(currentDate.year, currentDate.month, index + 1);
+  //     print('슬라이더 넘겼을 때 $currentDate');
+  //   });
+  // }
 
   @override
   void dispose() {
@@ -60,10 +70,28 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _updateMonth(int change) {
+    int newYear = currentDate.year;
+    int newMonth = currentDate.month + change;
+
+    // 1월보다 숫자 작으면 이전년도 12월
+    if (newMonth < 1) {
+      newYear--;
+      newMonth = 12;
+    }
+    // 12월보다 숫자 크면 다음 년도 1월
+    else if (newMonth > 12) {
+      newYear++;
+      newMonth = 1;
+    }
+
+    // 새로운 달의 마지막 날(일) 계산
+    int lastDayOfMonth = _daysInMonth(DateTime(newYear, newMonth));
+    int newDay = lastDayOfMonth < currentDate.day ? lastDayOfMonth : currentDate.day;
+
     setState(() {
-      currentDate = DateTime(currentDate.year, currentDate.month + change);
+      currentDate = DateTime(newYear, newMonth, newDay);
       daysInMonth = _daysInMonth(currentDate);
-      carouselController.jumpToPage(currentDate.day - 1);
+      carouselController.jumpToPage(newDay - 1);
     });
   }
 
@@ -73,11 +101,13 @@ class _HomeScreenState extends State<HomeScreen>
       initialDate: currentDate,
       onDateChanged: (DateTime selectedDate) {
         setState(() {
-          currentDate = DateTime(selectedDate.year, selectedDate.month);
+          currentDate = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
           daysInMonth = _daysInMonth(currentDate);
+          print(currentDate);
         });
         Future.delayed(Duration(milliseconds: 200), () {
-          carouselController.jumpToPage(selectedDate.day - 1);
+          final selectedDay = selectedDate.day;
+          carouselController.jumpToPage(selectedDay - 1);
         });
       },
     );
@@ -124,25 +154,23 @@ class _HomeScreenState extends State<HomeScreen>
   Future<List<DiaryModel>> getListEmotion() async {
     print(DateFormat('yyyy-MM').format(currentDate));
     try {
-      final resp = await http.post(
-        Uri.parse('$ip/Search_Diary_api/searchdiary'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'userId': userId,
-          'date': 'None',
-          'month': DateFormat('yyyy-MM').format(currentDate),
-          'limit': 'None',
-        }),
-      );
+
+      final resp = await dio.post('$ip/Search_Diary_api/searchdiary', data: {
+        'userId': userId,
+        'date': 'None',
+        'month': DateFormat('yyyy-MM').format(currentDate),
+        'limit': 'None',
+      });
+
       // print(resp.body);
       if (resp.statusCode == 200) {
-        List<dynamic> jsonData = jsonDecode(resp.body);
-        var emotionList =
-        jsonData.map((item) => DiaryModel.fromJson(item)).toList();
+        List<dynamic> jsonData = resp.data;
+        var emotionList = jsonData.map((item) => DiaryModel.fromJson(item)).toList();
         print(emotionList.length);
         return emotionList;
+      } else if (resp.statusCode == 404) {
+        // 데이터가 없을 때 404 오류를 반환하는 경우에도 빈 리스트를 반환하도록 처리
+        return [];
       } else {
         throw Exception('Failed to load data ${resp.statusCode}');
       }
@@ -166,6 +194,7 @@ class _HomeScreenState extends State<HomeScreen>
           viewportFraction: 0.75,
           initialPage: currentDate.day - 1,
           enableInfiniteScroll: false,
+          //onPageChanged: onPageChanged,
         ),
         itemBuilder: (context, index, realIndex) {
           return Container(
@@ -182,32 +211,68 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildMonthEmotionSkeletonUI() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
-      child: Container(
-        width: 30.0,
-        height: 30.0,
-        decoration: BoxDecoration(
-          color: Colors.red,
-          shape: BoxShape.circle,
-        ),
-      ),
+    return FutureBuilder<DiaryMonthModel>(
+      future: getMonthEmotion(),
+      builder: (_, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              width: 30.0,
+              height: 30.0,
+              decoration: BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+              ),
+            ),
+          );
+        } else if (snapshot.hasData) {
+          final data = snapshot.data;
+          final emotionIconMap = {
+            'sad': 'asset/sadEmoticon.webp',
+            'happy': 'asset/happyEmoticon.webp',
+            'angry': 'asset/angryEmoticon.webp',
+            'embarrassed': 'asset/embarrassedEmoticon.webp',
+            'anxiety': 'asset/anxietyEmoticon.webp',
+            'hurt': 'asset/hurtEmoticon.webp',
+            'neutral': 'asset/neutralEmoticon.webp',
+          };
+          return Row(
+            children: List.generate(data!.representEmotion.length, (index) {
+              String emotion = data.representEmotion[index];
+              String imagePath = emotionIconMap[emotion] ?? 'asset/img.webp';
+              return Container(
+                width: 30.0, // 원하는 크기 설정
+                height: 30.0, // 원하는 크기 설정
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: DecorationImage(
+                        fit: BoxFit.cover,
+                        image: AssetImage(imagePath))),
+              );
+            }),
+          );
+        } else {
+          return SizedBox(
+            width: 20,
+            height: 20,
+            child: _buildMonthEmotionSkeletonUI(),
+          );
+        }
+      },
     );
   }
 
   Future<DiaryMonthModel> getMonthEmotion() async {
-    final response =
-    await http.post(Uri.parse('$ip/Count_Month_Emotion/countmonthemotion'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'userId': userId,
-          'month': DateFormat('yyyy-MM').format(DateTime.now()),
-        }));
-    if (response.statusCode == 200) {
-      return DiaryMonthModel.fromJson(jsonDecode(response.body));
+
+    final resp = await dio.post('$ip/Count_Month_Emotion/countmonthemotion', data: {
+      'userId': userId,
+      'month': DateFormat('yyyy-MM').format(DateTime.now()),
+    });
+
+    if (resp.statusCode == 200) {
+      return DiaryMonthModel.fromJson(resp.data);
     } else {
       throw Exception('Failed to load data');
     }
@@ -363,6 +428,7 @@ class _HomeScreenState extends State<HomeScreen>
                         viewportFraction: 0.75,
                         initialPage: currentDate.day - 1,
                         enableInfiniteScroll: false,
+                        // onPageChanged: onPageChanged, // Add onPageChanged callback
                       ),
                       itemBuilder: (context, index, realIndex) {
                         DateTime sliderDate = DateTime(currentDate.year, currentDate.month, index + 1);
@@ -461,8 +527,8 @@ class _HomeScreenState extends State<HomeScreen>
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(dayDiary.textEmotion!.toSet().map((e) => '#$e').join(' '), style: TextStyle(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w500,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
                                           )),
                                           IconButton(
                                             onPressed: () {
@@ -554,58 +620,58 @@ class _HomeScreenState extends State<HomeScreen>
                         DateTime sliderDate = DateTime(currentDate.year, currentDate.month, index + 1);
                         // 해당 날짜에 해당하는 모든 일기 필터링
 
-                          return FlipCard(
-                            front: Container(
-                              width: double.infinity,
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 10),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[300],
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(20.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment
-                                      .spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${index + 1}일',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 30,
-                                      ),
+                        return FlipCard(
+                          front: Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment
+                                    .spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${index + 1}일',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 30,
                                     ),
-                                    // 사진 변경하기 버튼
-                                    IconButton(
-                                      onPressed: () {},
-                                      icon: Icon(
-                                        Icons.more_horiz_outlined,
-                                        color: Colors.white,
-                                      ),
+                                  ),
+                                  // 사진 변경하기 버튼
+                                  IconButton(
+                                    onPressed: () {},
+                                    icon: Icon(
+                                      Icons.more_horiz_outlined,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                          back: Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.symmetric(horizontal: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: const Padding(
+                                padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
+                                child: Center(
+                                    child: Text(
+                                        '일기가 없습니다.',
+                                        style: TextStyle(fontSize: 20)
                                     )
-                                  ],
-                                ),
-                              ),
-                            ),
-                            back: Container(
-                              width: double.infinity,
-                              margin: const EdgeInsets.symmetric(horizontal: 10),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[300],
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              child: const Padding(
-                                  padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-                                  child: Center(
-                                      child: Text(
-                                          '일기가 없습니다.',
-                                          style: TextStyle(fontSize: 20)
-                                      )
-                                  )),
-                            ),
-                          );
+                                )),
+                          ),
+                        );
                       },
                     );
                   }
@@ -618,6 +684,3 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 }
-
-
-

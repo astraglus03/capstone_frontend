@@ -1,11 +1,9 @@
-import 'dart:convert';
 import 'package:capstone_frontend/screen/statistic/line_chart_sample1.dart';
 import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
 import 'package:capstone_frontend/screen/statistic/pie_chart_sample2.dart';
 import 'package:flutter/material.dart';
 import'package:intl/intl.dart';
-import 'package:shimmer/shimmer.dart';
-import '../const/default_sliver_padding.dart';
+import 'package:capstone_frontend/const/default_sliver_padding.dart';
 import 'package:capstone_frontend/const/api_utils.dart';
 
 class DiaryDetailScreen extends StatefulWidget {
