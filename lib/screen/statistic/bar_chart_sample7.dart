@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'dart:math' as math;
-import 'package:capstone_frontend/screen/home/month_emotion_resp_model.dart';
+import 'package:capstone_frontend/screen/statistic/model/month_emotion_resp_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/month_feedback_model.dart';
 import 'package:capstone_frontend/screen/statistic/resources/app_resources.dart';
 import 'package:dio/dio.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import '../../const/api_utils.dart';
+import '../../../const/api_utils.dart';
 import 'package:http/http.dart' as http;
 
 enum GraphType {
@@ -37,7 +37,7 @@ class BarChartSample7 extends StatefulWidget {
 }
 
 class _BarChartSample7State extends State<BarChartSample7> {
-  GraphType currentGraphType = GraphType.text; // 기본은 텍스트 감정
+  GraphType currentGraphType = GraphType.abs; // 기본은 텍스트 감정
   String message = '';
   String emotionString = '';
 
@@ -98,28 +98,28 @@ class _BarChartSample7State extends State<BarChartSample7> {
               spacing: 8,
               children: [
                 IconButton(
+                  icon: Icon(Icons.auto_graph_rounded, size: 24), // 아이콘과 크기 설정
+                  onPressed: () {
+                    setState(() {
+                      currentGraphType = GraphType.abs;
+                    });
+                  },
+                  tooltip: '텍스트 감정', // 툴팁 추가
+                ),
+                IconButton(
                   icon: Icon(Icons.text_fields_rounded, size: 24), // 아이콘과 크기 설정
                   onPressed: () {
                     setState(() {
                       currentGraphType = GraphType.text;
                     });
                   },
-                  tooltip: '텍스트 감정', // 툴팁 추가
+                  tooltip: '음성 감정', // 툴팁 추가
                 ),
                 IconButton(
                   icon: Icon(Icons.keyboard_voice_rounded, size: 24), // 아이콘과 크기 설정
                   onPressed: () {
                     setState(() {
                       currentGraphType = GraphType.voice;
-                    });
-                  },
-                  tooltip: '음성 감정', // 툴팁 추가
-                ),
-                IconButton(
-                  icon: Icon(Icons.auto_graph_rounded, size: 24), // 아이콘과 크기 설정
-                  onPressed: () {
-                    setState(() {
-                      currentGraphType = GraphType.abs;
                     });
                   },
                   tooltip: '통합 감정', // 툴팁 추가

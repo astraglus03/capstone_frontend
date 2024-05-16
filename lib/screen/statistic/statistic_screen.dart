@@ -3,7 +3,8 @@ import 'package:capstone_frontend/const/currentuser_model.dart';
 import 'package:capstone_frontend/const/default_sliver_padding.dart';
 import 'package:capstone_frontend/login/kakao_login.dart';
 import 'package:capstone_frontend/login/main_view_model.dart';
-import 'package:capstone_frontend/screen/home/month_emotion_resp_model.dart';
+import 'package:capstone_frontend/screen/diary_detail_screen.dart';
+import 'package:capstone_frontend/screen/statistic/model/month_emotion_resp_model.dart';
 import 'package:capstone_frontend/screen/statistic/bar_chart_sample7.dart';
 import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
 import 'package:capstone_frontend/provider/emotion_manager.dart';
@@ -13,7 +14,6 @@ import 'package:flutter/material.dart';
 import 'package:capstone_frontend/screen/statistic/photoDetailScreen.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
-import '../diary_detail_screen.dart';
 import 'package:intl/intl.dart';
 
 class StatisticScreen extends StatefulWidget {
@@ -52,17 +52,28 @@ class _StatisticScreenState extends State<StatisticScreen> {
           ),
         ],
       )),
-      body: Padding(
-        padding:
-            const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 20),
-        child: CustomScrollView(
-          slivers: [
-            _diaryInfoSliver(),
-            _photoSliver(context),
-            _emotionSliver(),
-            _feedbackSliver(),
-          ],
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('asset/basebackground.png'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Padding(
+          padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 20),
+          child: CustomScrollView(
+            slivers: [
+              _diaryInfoSliver(),
+              _photoSliver(context),
+              _emotionSliver(),
+              _feedbackSliver(),
+            ],
+          ),
         ),
+    ],
       ),
     );
   }
@@ -396,7 +407,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
   // 한 달 감정 피드백
   DefaultSliverContainer _feedbackSliver() {
     return DefaultSliverContainer(
-      height: 250,
+      height: 300,
       child: ListView(
         children: <Widget>[
           FutureBuilder<List<DiaryMonthModel>>(

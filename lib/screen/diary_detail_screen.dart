@@ -110,7 +110,7 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('일기 텍스트'),
+          Text('<일기 텍스트>'),
           Text(widget.photoDetail.content!,maxLines: 6, overflow: TextOverflow.ellipsis,),
             ],
           ),
@@ -128,7 +128,7 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('피드백'),
+              Text('<피드백>'),
               Expanded(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -147,13 +147,6 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
             child: PieChartSample2(
               emotionList: widget.photoDetail.absEmotion!,
             ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('피드백입니다아아아앙 피드백입니다아아아앙 '),
-            ],
           ),
         ],
       ),

@@ -1,15 +1,22 @@
 import 'package:capstone_frontend/help1.dart';
 import 'package:capstone_frontend/login/auth_page.dart';
+import 'package:capstone_frontend/provider/provider_observer.dart';
 import 'package:capstone_frontend/screen/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   KakaoSdk.init(nativeAppKey: '1cf48672c2673ece9d56f59a5485150f');
   await dotenv.load(fileName: ".env");
-  runApp(MaterialApp(
+  runApp(
+    ProviderScope(
+      observers: [
+         Logger(),
+      ],
+        child: MaterialApp(
     // themeMode: ThemeMode.system,
     // theme: ThemeData(
     //   brightness: Brightness.light,
@@ -22,5 +29,6 @@ void main() async {
     ),
     debugShowCheckedModeBanner: false,
     home: AuthPage(),
-  ));
+  )),
+  );
 }

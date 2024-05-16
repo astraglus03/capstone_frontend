@@ -97,10 +97,11 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
                   scale: _scaleAnimation!.value,
                   child: Container(
                     decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('asset/img.webp'),
-                        fit: BoxFit.cover,
-                      ),
+                      // image: DecorationImage(
+                      //   image: AssetImage('asset/img.webp'),
+                      //   fit: BoxFit.cover,
+                      // ),
+                      color: Color(0xFFC9F5FF),
                     ),
                   ),
                 ),

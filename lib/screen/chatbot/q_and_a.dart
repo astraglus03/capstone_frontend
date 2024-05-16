@@ -1,5 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:capstone_frontend/const/api_utils.dart';
+import 'package:capstone_frontend/screen/statistic/model/chat_create_diary_model.dart';
+import 'package:capstone_frontend/screen/statistic/model/chat_resp_model.dart';
+import 'package:capstone_frontend/screen/statistic/model/chat_send_model.dart';
+import 'package:capstone_frontend/screen/main_screen.dart';
 import 'package:capstone_frontend/screen/statistic/model/chat_threadid_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/q_and_a_resp_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/q_and_a_send_model.dart';
@@ -30,13 +35,14 @@ class _QandAScreenState extends State<QandAScreen> {
   late audio_players.AudioPlayer audioPlay;
   late String audioPath;
   String? content = '';
-  bool? keyboardMode = false;
+  bool keyboardMode = false;
   bool isRecording = false;
   bool is_Transcribing = false;
   just_audio.AudioPlayer audioPlayer = just_audio.AudioPlayer();
   String threadId = '';
   String message = '';
   String answer = '';
+
 
   final ChatUser _currentUser =
   ChatUser(id: '1', firstName: 'Kim', lastName: 'KeonDong');
@@ -50,6 +56,7 @@ class _QandAScreenState extends State<QandAScreen> {
   void initState() {
     audioPlay = audio_players.AudioPlayer();
     audioRecord = FlutterSoundRecorder();
+    createChatThread(UserManager().getUserId()!);
     audioPath = '';
     setPermissions();
     super.initState();
@@ -65,6 +72,69 @@ class _QandAScreenState extends State<QandAScreen> {
     await Permission.microphone.request();
     await Permission.manageExternalStorage.request();
     await Permission.storage.request();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(150.0),
+        child: CustomAppBar(
+          keyboardMode: keyboardMode,
+          onToggleKeyboardMode: () {
+            // Function to toggle keyboard mode
+            setState(() {
+              keyboardMode = !keyboardMode;
+            });
+          },
+        ),
+      ),
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              // image: DecorationImage(
+              //   image: AssetImage("asset/chat_img.png"), // Replace with your image path
+              //   fit: BoxFit.cover,
+              // ),
+              //color: Color(0xFFC9F5FF),
+            ),
+          ),
+          DashChat(
+            messageOptions: const MessageOptions(
+              showCurrentUserAvatar: true,
+              currentUserContainerColor: Colors.lightBlueAccent,
+              containerColor: Colors.white,
+              textColor: Colors.black,
+            ),
+            currentUser: _currentUser,
+            typingUsers: _typingUsers,
+            onSend: (ChatMessage m) {
+              getChatResponse(m);
+            },
+            inputOptions: InputOptions(
+              sendOnEnter: true,
+              inputDisabled: true,
+              inputDecoration: InputDecoration(),
+            ),
+            messages: _messages,
+          ),
+        ],
+      ),
+      floatingActionButton: keyboardMode == false
+          ? Align(
+        alignment: const Alignment(0, 0.99),
+        child: FloatingActionButton(
+          onPressed: () {
+            isRecording ? stopRecording() : startRecording();
+          },
+          backgroundColor: isRecording ? Color(0xFFF15F5F) : Color(0xFFE0FFDB),
+          child: const Icon(Icons.mic_none_outlined, size: 24),
+        ),
+      )
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
   }
 
   Future<void> transcribe() async {
@@ -149,10 +219,6 @@ class _QandAScreenState extends State<QandAScreen> {
       });
       await audioRecord.closeRecorder();
       print('녹음기가 정상적으로 닫혔습니다.');
-
-      if(_messages.isEmpty){
-        await createChatThread(UserManager().getUserId()!);
-      }
 
       await transcribe();
     } catch (e) {
@@ -256,86 +322,6 @@ class _QandAScreenState extends State<QandAScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromRGBO(0, 166, 126, 1),
-        title: const Text(
-          'Q&A 챗봇',
-          style: TextStyle(
-            color: Colors.white,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          keyboardMode ?? false
-              ? IconButton(
-            onPressed: () {
-              setState(() {
-                keyboardMode = false;
-              });
-            },
-            icon: const Icon(Icons.mic_none_outlined),
-          )
-              : IconButton(
-            onPressed: () {
-              setState(() {
-                keyboardMode = true;
-              });
-            },
-            icon: const Icon(Icons.keyboard_alt_outlined),
-          ),
-        ],
-      ),
-      body: DashChat(
-        messageOptions: const MessageOptions(
-          showCurrentUserAvatar: true,
-          currentUserContainerColor: Colors.lightBlueAccent,
-          containerColor: Color.fromRGBO(0, 166, 126, 1,),
-          textColor: Colors.white,
-        ),
-        currentUser: _currentUser,
-        typingUsers: _typingUsers,
-        onSend: (ChatMessage m) {
-          getChatResponse(m);
-        },
-        inputOptions: InputOptions(
-          sendOnEnter: true,
-          inputDisabled: keyboardMode ?? false ? false : true,
-          inputDecoration: InputDecoration(
-            hintText: keyboardMode == false
-                ? "위의 마이크로 나에게 너의 감정을 들려줘!"
-                : '키보드 모드 활성화 되었습니다.',
-            hintStyle: TextStyle(color: Colors.grey[400]),
-            border: OutlineInputBorder(
-              borderSide: BorderSide.none,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            filled: true,
-            fillColor: Colors.grey[100],
-            contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          ),
-        ),
-        messages: _messages,
-      ),
-      floatingActionButton: keyboardMode == false
-          ? Align(
-        alignment: const Alignment(0, 0.99),
-        child: FloatingActionButton(
-          onPressed: () {
-            isRecording ? stopRecording() : startRecording();
-          },
-          backgroundColor: isRecording ? Colors.red : const Color.fromRGBO(0, 166, 126, 1),
-          child: const Icon(Icons.mic_none_outlined, size: 24),
-        ),
-      )
-          : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-    );
-  }
-
   Future<void> getChatResponse(ChatMessage m) async {
     setState(() {
       _messages.insert(0, m);
@@ -360,6 +346,80 @@ class _QandAScreenState extends State<QandAScreen> {
       );
       _typingUsers.remove(_gptChatUser);
     });
-    // _playAudio(answer, 0, 5, 2, 0, -5);  // volume, emotionStrength, alpha, speed
+
+    //_playAudio(message1, emotion, 5, 2, 0, -5);  // volume, emotionStrength, alpha, speed
   }
+}
+
+class CustomAppBar extends StatefulWidget {
+  final bool keyboardMode;
+  final VoidCallback onToggleKeyboardMode;
+
+  const CustomAppBar({
+    required this.keyboardMode,
+    required this.onToggleKeyboardMode,
+  });
+
+  @override
+  _CustomAppBarState createState() => _CustomAppBarState();
+}
+
+class _CustomAppBarState extends State<CustomAppBar> {
+  @override
+  Widget build(BuildContext context) {
+    return ClipPath(
+      clipper: AppBarClipper(),
+      child: Container(
+        color: Color(0xFFE0FFDB),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.arrow_back),
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Navigate back when the icon is pressed
+                  },
+                ),
+                SizedBox(width: 120),
+                CircleAvatar(
+                  backgroundImage: AssetImage('asset/logo.png'),
+                  radius: 36,
+                ),
+                SizedBox(width: 110),
+
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      widget.onToggleKeyboardMode();
+                    });
+                  },
+                  icon: Icon(widget.keyboardMode ? Icons.mic_none_outlined : Icons.keyboard_alt_outlined),
+                  color: Colors.black,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AppBarClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    Path path = Path();
+    path.lineTo(0, size.height - 40);
+    path.quadraticBezierTo(size.width / 4, size.height, size.width / 2, size.height - 40);
+    path.quadraticBezierTo(size.width * 3 / 4, size.height - 60, size.width, size.height - 10);
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

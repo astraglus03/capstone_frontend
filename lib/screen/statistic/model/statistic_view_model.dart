@@ -1,4 +1,4 @@
-import 'package:capstone_frontend/screen/home/month_emotion_resp_model.dart';
+import 'package:capstone_frontend/screen/statistic/model/month_emotion_resp_model.dart';
 import 'package:flutter/material.dart';
 
 class StatisticViewModel extends ChangeNotifier {

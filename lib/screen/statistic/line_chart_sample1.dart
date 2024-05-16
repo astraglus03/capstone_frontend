@@ -103,7 +103,7 @@ class _LineChart extends StatelessWidget {
       ),
 
       minX: 0,
-      maxX: maxX,
+      maxX: maxX+1,
       minY: 0,
       maxY: emotionAccumulatedCounts.values.isNotEmpty ? (emotionAccumulatedCounts.values.reduce(max) + 2).toDouble() : 7,
       lineBarsData: lineBarsData,
@@ -344,15 +344,15 @@ class _LineChart extends StatelessWidget {
       case 7:
         text = const Text('7', style: style);
         break;
-      case 8:
-        text = const Text('8', style: style);
-        break;
-      case 9:
-        text = const Text('9', style: style);
-        break;
-      case 10:
-        text = const Text('10', style: style);
-        break;
+      // case 8:
+      //   text = const Text('8', style: style);
+      //   break;
+      // case 9:
+      //   text = const Text('9', style: style);
+      //   break;
+      // case 10:
+      //   text = const Text('10', style: style);
+      //   break;
 
       default:
         text = const Text('');
@@ -427,7 +427,7 @@ class LineChartSample1State extends State<LineChartSample1> {
   void initState() {
     super.initState();
     isShowingMainData = true;
-    currentGraphType = GraphType.text;
+    currentGraphType = GraphType.abs;
   }
 
   @override
@@ -442,28 +442,28 @@ class LineChartSample1State extends State<LineChartSample1> {
             alignment: MainAxisAlignment.center,
             children: <Widget>[
               IconButton(
+                icon: Icon(Icons.auto_graph_rounded, size: 24), // 아이콘과 크기 설정
+                onPressed: () {
+                  setState(() {
+                    currentGraphType = GraphType.abs;
+                  });
+                },
+                tooltip: '텍스트 감정', // 툴팁 추가
+              ),
+              IconButton(
                 icon: Icon(Icons.text_fields_rounded, size: 24), // 아이콘과 크기 설정
                 onPressed: () {
                   setState(() {
                     currentGraphType = GraphType.text;
                   });
                 },
-                tooltip: '텍스트 감정', // 툴팁 추가
+                tooltip: '음성 감정', // 툴팁 추가
               ),
               IconButton(
                 icon: Icon(Icons.keyboard_voice_rounded, size: 24), // 아이콘과 크기 설정
                 onPressed: () {
                   setState(() {
                     currentGraphType = GraphType.voice;
-                  });
-                },
-                tooltip: '음성 감정', // 툴팁 추가
-              ),
-              IconButton(
-                icon: Icon(Icons.auto_graph_rounded, size: 24), // 아이콘과 크기 설정
-                onPressed: () {
-                  setState(() {
-                    currentGraphType = GraphType.abs;
                   });
                 },
                 tooltip: '통합 감정', // 툴팁 추가
