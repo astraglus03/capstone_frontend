@@ -40,26 +40,13 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
         const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
         child: CustomScrollView(
           slivers: [
-            _hashtagSliver(),
             _pictureSliver(),
             _diarySliver(),
-            if (_showEmotionSliver) _emotionSliver(), // 조건부 표시
+            if (_showEmotionSliver) _emotionSliver(),
             _feedbackSliver(),
-            //_rateSliver(),
           ],
         ),
       ),
-    );
-  }
-
-  // 해시태그
-  DefaultSliverContainer _hashtagSliver() {
-    return DefaultSliverContainer(
-      height: 20,
-      child: Text(widget.photoDetail.textEmotion!.toSet().map((e) => '#$e').join(' '), style: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-      ),),
     );
   }
 
@@ -71,7 +58,11 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('감정 변화 그래프'),
+                SizedBox(height: 10,),
+                Text('<감정 변화 그래프>', style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),),
                 LineChartSample1(
                   chatCount: widget.photoDetail.chatCount.toString(),
                   textEmo: widget.photoDetail.textEmotion!.cast<String>(),
@@ -86,11 +77,17 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
   // 그림
   DefaultSliverContainer _pictureSliver() {
     return DefaultSliverContainer(
-      height: 150,
+      height: 250,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          SizedBox(height: 10,),
+          Text(widget.photoDetail.textEmotion!.toSet().map((e) => '#$e').join(' '), textAlign: TextAlign.start, style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),),
+          SizedBox(height: 10,),
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
@@ -105,13 +102,19 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
   // 일기
   DefaultSliverContainer _diarySliver() {
     return DefaultSliverContainer(
-      height: 150,
+      height: 250,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('<일기 텍스트>'),
-          Text(widget.photoDetail.content!,maxLines: 6, overflow: TextOverflow.ellipsis,),
+          SizedBox(height: 10,),
+          Text('<일기 내용>', style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),),
+          SizedBox(height: 20,),
+          Text(widget.photoDetail.content!,maxLines: 6, overflow: TextOverflow.ellipsis, style: TextStyle(
+            fontSize: 14,
+          ),),
             ],
           ),
     );
@@ -128,7 +131,10 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('<피드백>'),
+              Text('<일기 감정 비율>', style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),),
               Expanded(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,

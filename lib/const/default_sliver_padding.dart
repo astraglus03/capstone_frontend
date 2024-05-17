@@ -28,7 +28,10 @@ class DefaultSliverContainer extends StatelessWidget {
               //   ),
               // ],
             ),
-            child: child,
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: child,
+            )
           ),
         ),
       ),

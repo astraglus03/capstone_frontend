@@ -228,7 +228,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
       // print('가져오기 성공');
       // print('가져오기${jsonData.map((item) => PhotoModel.fromJson(item)).toList()}');
       List<dynamic> data = resp.data;
-      return data.map((e) => DiaryModel.fromJson(e)).toList();
+      return data.reversed.map((e) => DiaryModel.fromJson(e)).toList();
     } else {
       print('Failed to load photo with status code: ${resp.statusCode}');
       print('Error body: ${resp.data}');
@@ -345,7 +345,15 @@ class _StatisticScreenState extends State<StatisticScreen> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('1개월 감정 변화 그래프'),
+                  RichText(
+                    text: TextSpan(
+                      text: '1개월 ',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontFamily: 'KCC-Ganpan'),
+                      children: <TextSpan>[
+                        TextSpan(text: '감정 변화 그래프.', style: TextStyle(color: Colors.black,fontWeight: FontWeight.normal)),
+                      ],
+                    ),
+                  ),
                   BarChartSample7(
                     model: snapshot.data!,
                   ),

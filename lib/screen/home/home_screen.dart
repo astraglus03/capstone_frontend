@@ -9,9 +9,12 @@ import 'package:capstone_frontend/screen/statistic/model/month_emotion_resp_mode
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dio/dio.dart';
 import 'package:flip_card/flip_card.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:notebook_paper/notebook_paper.dart';
+import 'package:responsive_notebook_background/responsive_notebook_background.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:weather/weather.dart';
 
@@ -224,12 +227,13 @@ class _HomeScreenState extends State<HomeScreen>
       baseColor: Colors.grey[300]!,
       highlightColor: Colors.grey[100]!,
       child: Row(
-        children: List.generate(2, (index) {
+        children: List.generate(1, (index) {
           return Container(
             width: 20.0, // 원하는 크기 설정
             height: 20.0, // 원하는 크기 설정
             decoration: BoxDecoration(
               shape: BoxShape.circle,
+              color: Colors.grey[300],
             ),
           );
         }),
@@ -442,18 +446,18 @@ class _HomeScreenState extends State<HomeScreen>
                                     Text(
                                       '${index + 1}일',
                                       style: const TextStyle(
-                                        color: Colors.white,
+                                        color: Colors.black,
                                         fontSize: 30,
                                       ),
                                     ),
                                     // 사진 변경하기 버튼
-                                    IconButton(
-                                      onPressed: () {},
-                                      icon: Icon(
-                                        Icons.more_horiz_outlined,
-                                        color: Colors.white,
-                                      ),
-                                    )
+                                    // IconButton(
+                                    //   onPressed: () {},
+                                    //   icon: Icon(
+                                    //     Icons.more_horiz_outlined,
+                                    //     color: Colors.white,
+                                    //   ),
+                                    // )
                                   ],
                                 ),
                               ),
@@ -481,22 +485,28 @@ class _HomeScreenState extends State<HomeScreen>
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
+                                            // Expanded(child: NotebookPaper(
+                                            //   title: '일기',
+                                            //   entireText: dayDiary.content!,
+                                            //   fontSize: 12.0,
+                                            //   rowHeight: 1.0,
+                                            //   width: double.infinity,
+                                            //   paperColor: Color.fromARGB(255, 253, 248, 184),
+                                            //   horizontalLinesColor: Colors.blue,
+                                            //   verticalLinesColor: Colors.pink,
+                                            //   pageTitle: true,
+                                            // )),
                                             Text(
                                               dayDiary.content!,
-                                              style: TextStyle(fontSize: 14),
+                                              maxLines: 6,
                                               overflow: TextOverflow.ellipsis,
-                                              maxLines: 8,
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                              ),
                                             ),
                                             SizedBox(
                                               height: 10,
                                             ),
-                                            Text(
-                                                '피드벡: 여기는 피드백하는 공간 여기는 피드백하는 공간 여기는 피드백하는 공간 여기는 피드백하는 공간 여기는 피드백하는 공간 여기는 피드백하는 공간'
-                                                '여기는 피드백하는 공간 여기는 피드백하는 공간 여기는 피드백하는 공간 여기는 피드백하는 공간 여기는 피드백하는 공간 여기는 피드백하는 공간 여기는 피드백하는 공간'
-                                                '여기는 피드백하는 공간 여기는 피드백하는 공간 여기는 피드백하는 공간 여기는 피드백하는 공간 여기는 피드백하는 공간',
-                                                style: TextStyle(fontSize: 14),
-                                                overflow: TextOverflow.ellipsis,
-                                                maxLines: 6),
                                           ],
                                         ),
                                       ),

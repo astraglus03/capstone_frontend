@@ -52,7 +52,7 @@ class _CalendarState extends State<Calendar> {
         for (var i in schedules) {
           DateTime date = DateTime.parse(i.date);
           List<Event> existingEvents = [];
-          existingEvents.add(Event(i.content));
+          existingEvents.add(Event(i.date,i.content));
           kEvents[date] = existingEvents;
         }
       });
@@ -107,9 +107,19 @@ class _CalendarState extends State<Calendar> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('나의 캘린더 일정'),
-        centerTitle: true,
-      ),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.settings),
+              ),
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.search),
+              ),
+            ],
+          )),
       body: Column(
         children: [
           TableCalendar<Event>(

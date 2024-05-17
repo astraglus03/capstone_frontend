@@ -275,10 +275,12 @@ class _BarChartSample7State extends State<BarChartSample7> {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       MonthFeedbackModel monthRepEmo = MonthFeedbackModel.fromJson(data);
-      setState(() {
-        message = monthRepEmo.feedback;
-        print('message: $message');
-      });
+      if(mounted){
+        setState(() {
+          message = monthRepEmo.feedback;
+          print('message: $message');
+        });
+      }
       return monthRepEmo;
     }
     else if (response.statusCode == 400) {

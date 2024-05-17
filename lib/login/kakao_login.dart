@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:capstone_frontend/const/api_utils.dart';
 import 'package:capstone_frontend/login/social_login.dart';
 import 'package:dio/dio.dart';
-import 'package:http/http.dart' as http;
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 final dio = Dio();
@@ -31,7 +30,6 @@ class KakaoLogin implements SocialLogin {
       'profileImage': user.kakaoAccount?.profile?.profileImageUrl ?? ''
     });
 
-    // var response = await http.post(Uri.parse(url), headers: headers, body: body);
     var resp = await dio.post(url,data: body);
     if (resp.statusCode == 200) {
       print('User info sent to server successfully.');

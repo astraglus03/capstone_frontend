@@ -112,7 +112,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             profileImage: resp.data['profileImage'],
           );
         });
-        return resp.data['nickname'];
+        return CurrentUser.fromJson(resp.data);
         // print("사용자 ID: ${data['userId']}");
         // print("닉네임: ${data['nickname']}");
         // print("프로필 이미지 URL: ${data['profileImage']}");
@@ -180,8 +180,31 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             },
             inputOptions: InputOptions(
               sendOnEnter: true,
-              inputDisabled: true,
-              inputDecoration: InputDecoration(),
+              inputDisabled: keyboardMode ? false : true,
+              inputDecoration: keyboardMode ?
+              InputDecoration(
+                hintText: '메시지를 입력하세요',
+                border: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(20)),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.all(10),
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.send),
+                  onPressed: () {
+                    if (content != null) {
+                      ChatMessage message = ChatMessage(
+                        user: _currentUser,
+                        createdAt: DateTime.now(),
+                        text: content!,
+                      );
+                      getChatResponse(message);
+                    }
+                  },
+                ),
+              ) : InputDecoration(),
             ),
             messages: _messages,
           ),
@@ -516,13 +539,14 @@ class _CustomAppBarState extends State<CustomAppBar> {
                 IconButton(
                   icon: Icon(Icons.arrow_back),
                   onPressed: () {
-                    Navigator.of(context)
-                        .pop(); // Navigate back when the icon is pressed
+                    Navigator.of(context).pop(); // Navigate back when the icon is pressed
                   },
                 ),
-                SizedBox(width: 120),
+                Spacer(),
+                SizedBox(width: 10),
+                Spacer(),
                 Image.asset('asset/logo.jpeg', scale: 10),
-                SizedBox(width: 110),
+                Spacer(),
                 if (widget.status == 1) // status == 1 && count>0
                   TextButton(
                     onPressed: () {
@@ -564,13 +588,15 @@ class _CustomAppBarState extends State<CustomAppBar> {
 
                         Future.delayed(Duration(seconds: 2), () {
                           Navigator.of(context).pop();
-                          Navigator.push(context,MaterialPageRoute(builder: (context) => MainScreen()));
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (context) => MainScreen()),
+                          );
                         });
                       });
                     },
                     child: Text('일기 생성', style: TextStyle(color: Colors.black, fontSize: 14)),
                   ),
-                SizedBox(width: 5),
+                Spacer(),
                 IconButton(
                   onPressed: () {
                     setState(() {

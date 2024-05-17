@@ -171,7 +171,7 @@ class _LineChart extends StatelessWidget {
       ),
 
       minX: 0,
-      maxX: maxX,
+      maxX: maxX+1,
       minY: 0,
       maxY: emotionAccumulatedCounts.values.isNotEmpty ? (emotionAccumulatedCounts.values.reduce(max) + 2).toDouble() : 7,
       lineBarsData: lineBarsData,
@@ -239,7 +239,7 @@ class _LineChart extends StatelessWidget {
       ),
 
       minX: 0,
-      maxX: maxX,
+      maxX: maxX+1,
       minY: 0,
       maxY: emotionAccumulatedCounts.values.isNotEmpty ? (emotionAccumulatedCounts.values.reduce(max) + 2).toDouble() : 7,
       lineBarsData: lineBarsData,
@@ -437,36 +437,59 @@ class LineChartSample1State extends State<LineChartSample1> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          // 버튼을 추가합니다.
           ButtonBar(
             alignment: MainAxisAlignment.center,
             children: <Widget>[
-              IconButton(
-                icon: Icon(Icons.auto_graph_rounded, size: 24), // 아이콘과 크기 설정
-                onPressed: () {
-                  setState(() {
-                    currentGraphType = GraphType.abs;
-                  });
-                },
-                tooltip: '텍스트 감정', // 툴팁 추가
+              Container(
+                width: 48, // 원 크기 지정
+                height: 48, // 원 크기 지정
+                decoration: BoxDecoration(
+                  color: currentGraphType == GraphType.abs ? Color(0xFFC9F5FF) : Colors.transparent,
+                  shape: BoxShape.circle, // 원형 배경
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.auto_graph_rounded, size: 24),
+                  onPressed: () {
+                    setState(() {
+                      currentGraphType = GraphType.abs;
+                    });
+                  },
+                  tooltip: '텍스트 감정',
+                ),
               ),
-              IconButton(
-                icon: Icon(Icons.text_fields_rounded, size: 24), // 아이콘과 크기 설정
-                onPressed: () {
-                  setState(() {
-                    currentGraphType = GraphType.text;
-                  });
-                },
-                tooltip: '음성 감정', // 툴팁 추가
+              Container(
+                width: 48, // 원 크기 지정
+                height: 48, // 원 크기 지정
+                decoration: BoxDecoration(
+                  color: currentGraphType == GraphType.text ? Color(0xFFC9F5FF) : Colors.transparent,
+                  shape: BoxShape.circle, // 원형 배경
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.text_fields_rounded, size: 24),
+                  onPressed: () {
+                    setState(() {
+                      currentGraphType = GraphType.text;
+                    });
+                  },
+                  tooltip: '음성 감정',
+                ),
               ),
-              IconButton(
-                icon: Icon(Icons.keyboard_voice_rounded, size: 24), // 아이콘과 크기 설정
-                onPressed: () {
-                  setState(() {
-                    currentGraphType = GraphType.voice;
-                  });
-                },
-                tooltip: '통합 감정', // 툴팁 추가
+              Container(
+                width: 48, // 원 크기 지정
+                height: 48, // 원 크기 지정
+                decoration: BoxDecoration(
+                  color: currentGraphType == GraphType.voice ? Color(0xFFC9F5FF) : Colors.transparent,
+                  shape: BoxShape.circle, // 원형 배경
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.keyboard_voice_rounded, size: 24),
+                  onPressed: () {
+                    setState(() {
+                      currentGraphType = GraphType.voice;
+                    });
+                  },
+                  tooltip: '통합 감정',
+                ),
               ),
             ],
           ),
@@ -487,5 +510,4 @@ class LineChartSample1State extends State<LineChartSample1> {
       ),
     );
   }
-
 }

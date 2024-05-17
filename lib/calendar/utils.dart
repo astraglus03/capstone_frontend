@@ -2,14 +2,20 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:intl/intl.dart';
 
 class Event {
+  final String date;
   final String title;
 
-  const Event(this.title);
+  const Event(this.date,this.title);
 
   @override
-  String toString() => title;
+  String toString() {
+    final DateTime parsedDate = DateFormat('yyyy-MM-dd').parse(date); // 날짜 문자열을 DateTime 객체로 파싱
+    final String formattedDate = DateFormat('dd').format(parsedDate) + '일'; // 원하는 형식 'dd일'로 포맷
+    return formattedDate + ' - ' + title; // 최종 문자열 생성
+  }
 }
 
 /// Using a [LinkedHashMap] is highly recommended if you decide to use a map.

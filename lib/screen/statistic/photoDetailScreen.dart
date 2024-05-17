@@ -1,9 +1,7 @@
-import 'dart:convert';
 import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone_frontend/screen/diary_detail_screen.dart';
-import 'package:http/http.dart' as http;
 import 'package:capstone_frontend/const/api_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
@@ -44,7 +42,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
         print(resp.data.length);  // 성공적으로 출력
 
         List<dynamic> data = resp.data;
-        return data.map((e) => DiaryModel.fromJson(e)).toList();
+        return data.reversed.map((e) => DiaryModel.fromJson(e)).toList();
       } catch (e) {
         print('Error parsing photos: $e');  // 파싱 중 발생한 에러 출력
         throw Exception('Error parsing photos: $e');

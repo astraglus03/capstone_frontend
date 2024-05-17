@@ -83,7 +83,7 @@ class _PieChart2State extends State<PieChartSample2> {
           title: '${(entry.value / total * 100).toInt()}%',
           radius: isTouched ? 60.0 : 50.0,
           titleStyle: TextStyle(
-            fontSize: isTouched ? 25.0 : 16.0,
+            fontSize: isTouched ? 25.0 : 12.0,
             fontWeight: FontWeight.bold,
             color: Colors.white,
             shadows: const [Shadow(color: Colors.black, blurRadius: 2)],

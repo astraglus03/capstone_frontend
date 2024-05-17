@@ -1,10 +1,6 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:capstone_frontend/const/api_utils.dart';
-import 'package:capstone_frontend/screen/statistic/model/chat_create_diary_model.dart';
-import 'package:capstone_frontend/screen/statistic/model/chat_resp_model.dart';
-import 'package:capstone_frontend/screen/statistic/model/chat_send_model.dart';
-import 'package:capstone_frontend/screen/main_screen.dart';
+import 'package:capstone_frontend/const/currentuser_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/chat_threadid_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/q_and_a_resp_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/q_and_a_send_model.dart';
@@ -42,12 +38,10 @@ class _QandAScreenState extends State<QandAScreen> {
   String threadId = '';
   String message = '';
   String answer = '';
+  late ChatUser _currentUser = ChatUser(id: '1', firstName: '', lastName: '');
 
-
-  final ChatUser _currentUser =
-  ChatUser(id: '1', firstName: 'Kim', lastName: 'KeonDong');
   final ChatUser _gptChatUser =
-  ChatUser(id: '2', firstName: 'Chat', lastName: 'Gpt');
+  ChatUser(id: '2', firstName: '퐁', lastName: '당');
 
   final List<ChatMessage> _messages = <ChatMessage>[];
   final List<ChatUser> _typingUsers = <ChatUser>[];
@@ -57,6 +51,7 @@ class _QandAScreenState extends State<QandAScreen> {
     audioPlay = audio_players.AudioPlayer();
     audioRecord = FlutterSoundRecorder();
     createChatThread(UserManager().getUserId()!);
+    getCurrentUser(UserManager().getUserId().toString());
     audioPath = '';
     setPermissions();
     super.initState();
@@ -66,6 +61,31 @@ class _QandAScreenState extends State<QandAScreen> {
   void dispose() {
     audioPlay.dispose();
     super.dispose();
+  }
+
+  Future<CurrentUser?> getCurrentUser(String userId) async {
+    try {
+      final resp = await dio.get('$ip/userinfo/userinfo/$userId');
+
+      if (resp.statusCode == 200) {
+        setState(() {
+          _currentUser = ChatUser(
+            id: '1',
+            firstName: resp.data['nickname'].substring(0, 1),
+            lastName: resp.data['nickname'].substring(1),
+            profileImage: resp.data['profileImage'],
+          );
+        });
+        return CurrentUser.fromJson(resp.data);
+        // print("사용자 ID: ${data['userId']}");
+        // print("닉네임: ${data['nickname']}");
+        // print("프로필 이미지 URL: ${data['profileImage']}");
+      } else {
+        throw Exception('서버에서 정보를 가져오는 데 실패했습니다.');
+      }
+    } catch (e) {
+      print('에러 발생: $e');
+    }
   }
 
   void setPermissions() async {
@@ -347,7 +367,7 @@ class _QandAScreenState extends State<QandAScreen> {
       _typingUsers.remove(_gptChatUser);
     });
 
-    //_playAudio(message1, emotion, 5, 2, 0, -5);  // volume, emotionStrength, alpha, speed
+    _playAudio(answer, 0, 5, 2, 0, -3);  // volume, emotionStrength, alpha, speed
   }
 }
 
@@ -383,12 +403,12 @@ class _CustomAppBarState extends State<CustomAppBar> {
                     Navigator.of(context).pop(); // Navigate back when the icon is pressed
                   },
                 ),
-                SizedBox(width: 120),
+                Spacer(),
                 CircleAvatar(
-                  backgroundImage: AssetImage('asset/logo.png'),
-                  radius: 36,
+                  backgroundImage: AssetImage('asset/logo.jpeg'),
+                  radius: 24,
                 ),
-                SizedBox(width: 110),
+                Spacer(),
 
                 IconButton(
                   onPressed: () {
@@ -401,6 +421,13 @@ class _CustomAppBarState extends State<CustomAppBar> {
                 ),
               ],
             ),
+            Text(
+              '떠올리고싶은걸 물어봐!',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            )
           ],
         ),
       ),

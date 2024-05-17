@@ -46,6 +46,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
         currentIndex: _index,
+        selectedIconTheme: IconThemeData(color: Colors.blue),
         onTap: (index) {
           setState(() {
             _index = index;

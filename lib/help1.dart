@@ -1,11 +1,9 @@
-import 'dart:convert';
 import 'package:capstone_frontend/calendar/utils.dart';
 import 'package:capstone_frontend/const/api_utils.dart';
 import 'package:capstone_frontend/provider/state_notifier_provider.dart';
 import 'package:capstone_frontend/screen/chatbot/chatbot_screen.dart';
 import 'package:capstone_frontend/screen/chatbot/q_and_a.dart';
 import 'package:capstone_frontend/screen/diary_detail_screen.dart';
-import 'package:capstone_frontend/screen/statistic/model/month_emotion_resp_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dio/dio.dart';
