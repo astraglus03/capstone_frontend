@@ -66,6 +66,8 @@ dependencies:
   flutter_native_splash: ^2.4.0
   notebook_paper: ^0.0.4
   responsive_notebook_background: ^1.0.1
+  awesome_notifications: ^0.8.2
+  flutter_local_notifications: ^17.1.2
 
 
 

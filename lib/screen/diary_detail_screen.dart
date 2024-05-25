@@ -102,7 +102,7 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
   // 일기
   DefaultSliverContainer _diarySliver() {
     return DefaultSliverContainer(
-      height: 250,
+      height: 350,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -112,7 +112,7 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
               fontWeight: FontWeight.bold,
             ),),
           SizedBox(height: 20,),
-          Text(widget.photoDetail.content!,maxLines: 6, overflow: TextOverflow.ellipsis, style: TextStyle(
+          Text(widget.photoDetail.content!, style: TextStyle(
             fontSize: 14,
           ),),
             ],

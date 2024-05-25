@@ -1,5 +1,5 @@
-import 'package:capstone_frontend/help1.dart';
 import 'package:capstone_frontend/login/auth_page.dart';
+import 'package:capstone_frontend/noti_service.dart';
 import 'package:capstone_frontend/provider/provider_observer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -12,6 +12,7 @@ void main() async {
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await Future.delayed(Duration(seconds: 1));
   FlutterNativeSplash.remove();
+  NotificationService().initNotification();
   KakaoSdk.init(nativeAppKey: '1cf48672c2673ece9d56f59a5485150f');
   await dotenv.load(fileName: ".env");
   runApp(
