@@ -1,24 +1,13 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:capstone_frontend/const/api_utils.dart';
-import 'package:capstone_frontend/screen/statistic/model/currentuser_model.dart';
-import 'package:capstone_frontend/screen/statistic/model/chat_create_diary_model.dart';
-import 'package:capstone_frontend/screen/statistic/model/chat_resp_model.dart';
-import 'package:capstone_frontend/screen/statistic/model/chat_send_model.dart';
 import 'package:capstone_frontend/screen/main_screen.dart';
-import 'package:capstone_frontend/screen/statistic/model/chat_threadid_model.dart';
-import 'package:capstone_frontend/screen/statistic/model/weight_resp_model.dart';
-import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:audioplayers/audioplayers.dart' as audio_players;
-import 'package:just_audio/just_audio.dart' as just_audio;
-import 'package:google_speech/google_speech.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 
 class SampleAudioScreen extends StatefulWidget {

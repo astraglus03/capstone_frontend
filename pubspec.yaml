@@ -101,6 +101,7 @@ flutter:
   assets:
     - .env
     - asset/
+    - asset/emotion/
   fonts:
     - family: KCC-Ganpan
       fonts:

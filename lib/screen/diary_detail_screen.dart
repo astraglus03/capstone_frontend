@@ -1,3 +1,5 @@
+import 'package:capstone_frontend/const/default_sliver_padding2.dart';
+import 'package:capstone_frontend/screen/statistic/emotion_change_chart.dart';
 import 'package:capstone_frontend/screen/statistic/line_chart_sample1.dart';
 import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
 import 'package:capstone_frontend/screen/statistic/pie_chart_sample2.dart';
@@ -43,6 +45,7 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
             _pictureSliver(),
             _diarySliver(),
             if (_showEmotionSliver) _emotionSliver(),
+            _emotionChangeSliver(),
             _pieChartSliver(),
             _feedbackSliver(),
           ],
@@ -52,15 +55,14 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
   }
 
   // 스레드 내 감정변화 그래프
-  DefaultSliverContainer _emotionSliver() {
-    return DefaultSliverContainer(
-      height: 350,
+  DefaultSliverContainer2 _emotionSliver() {
+    return DefaultSliverContainer2(
       child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(height: 10,),
-                Text('<감정 변화 그래프>', style: TextStyle(
+                Text('<감정 누적 그래프>', style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),),
@@ -76,15 +78,14 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
   }
 
   // 그림
-  DefaultSliverContainer _pictureSliver() {
-    return DefaultSliverContainer(
-      height: 250,
+  DefaultSliverContainer2 _pictureSliver() {
+    return DefaultSliverContainer2(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SizedBox(height: 10,),
-          Text(widget.photoDetail.textEmotion!.toSet().map((e) => '#$e').join(' '), textAlign: TextAlign.start, style: TextStyle(
+          Text(widget.photoDetail.absEmotion!.toSet().map((e) => '#$e').join(' '), textAlign: TextAlign.start, style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),),
@@ -101,9 +102,8 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
   }
 
   // 일기
-  DefaultSliverContainer _diarySliver() {
-    return DefaultSliverContainer(
-      height: 350,
+  DefaultSliverContainer2 _diarySliver() {
+    return DefaultSliverContainer2(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -121,10 +121,29 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
     );
   }
 
+  // 감정 변화 피드백
+  DefaultSliverContainer2 _emotionChangeSliver() {
+    return DefaultSliverContainer2(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 10,),
+          Text('<감정 변화 그래프>', style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),),
+          EmotionChangeChart(
+            absEmo: widget.photoDetail.absEmotion!.cast<String>(),
+          ),
+        ],
+      ),
+    );
+  }
+
   // 일기 파이차트
-  DefaultSliverContainer _pieChartSliver() {
-    return DefaultSliverContainer(
-      height: 300,
+  DefaultSliverContainer2 _pieChartSliver() {
+    return DefaultSliverContainer2(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,9 +177,8 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
     );
   }
 
-  DefaultSliverContainer _feedbackSliver() {
-    return DefaultSliverContainer(
-      height: 600,
+  DefaultSliverContainer2 _feedbackSliver() {
+    return DefaultSliverContainer2(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,

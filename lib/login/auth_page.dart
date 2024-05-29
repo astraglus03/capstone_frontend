@@ -98,7 +98,6 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
   void goToNewPage() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await getCurrentUser(UserManager().getUserId()!).then((value) {
-        print(value?.weight);
         if(value?.weight != null){
           Navigator.of(context).push(MaterialPageRoute(builder: (_) => MainScreen()));
         }

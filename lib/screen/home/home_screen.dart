@@ -259,6 +259,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     initializeDateFormatting('ko_KR');
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Row(
           children: [
             FutureBuilder<DiaryMonthModel>(
@@ -503,7 +504,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                 ),
                                                 Text(
                                                   filteredDiaries[index].feedback!,
-                                                  overflow: TextOverflow.clip,
+                                                  overflow: TextOverflow.ellipsis,
                                                   maxLines: 8,
                                                 ),
                                               ],
@@ -554,27 +555,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               ),
                               child: Padding(
                                 padding: const EdgeInsets.all(20.0),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${index + 1}일',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 30,
-                                      ),
-                                    ),
-                                    // 사진 변경하기 버튼
-                                    IconButton(
-                                      onPressed: () {},
-                                      icon: Icon(
-                                        Icons.more_horiz_outlined,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  ],
+                                child: Text(
+                                  '${index + 1}일',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 30,
+                                  ),
                                 ),
                               ),
                             ),

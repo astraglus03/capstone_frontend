@@ -89,6 +89,7 @@ class _CalendarState extends State<Calendar> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false, // 뒤로가기 없애기
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -101,7 +102,8 @@ class _CalendarState extends State<Calendar> {
                 icon: const Icon(Icons.search),
               ),
             ],
-          )),
+          )
+      ),
       body: Column(
         children: [
           TableCalendar<Event>(
@@ -149,21 +151,39 @@ class _CalendarState extends State<Calendar> {
                 BoxDecoration decoration;
                 // 배경 있으면 배경 추가됨
                   decoration = BoxDecoration(
-                    color: Colors.lightBlue.shade50, // 배경 처리 예정
-                    shape: BoxShape.circle,
+                    image: DecorationImage(
+                      image: AssetImage('asset/logo.jpeg'),
+                      fit: BoxFit.cover,
+                    ),
+                    shape: BoxShape.circle
                   );
-                return Container(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 12.0,
-                    vertical: 4.0,
-                  ),
-                  decoration: decoration,
-                  alignment: Alignment.center,
-                  child: Text('${day.day}', style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  )),
-                );
+                  return Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 12.0,
+                            vertical: 4.0,
+                          ),
+                          decoration: decoration,
+                          alignment: Alignment.center,
+                          child: Text(''),
+                        );
+                // return Column(
+                //   children: [
+                //     Container(
+                //       margin: const EdgeInsets.symmetric(
+                //         horizontal: 12.0,
+                //         vertical: 4.0,
+                //       ),
+                //       decoration: decoration,
+                //       alignment: Alignment.center,
+                //       child: Text(''),
+                //     ),
+                //     Spacer(),
+                //     Text('${day.day}', style: const TextStyle(
+                //       fontWeight: FontWeight.bold,
+                //       color: Colors.black,
+                //     )),
+                //   ],
+                // );
               },
             ),
           ),

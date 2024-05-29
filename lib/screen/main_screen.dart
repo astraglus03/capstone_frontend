@@ -1,24 +1,12 @@
-import 'dart:io';
-import 'dart:typed_data';
 import 'package:capstone_frontend/calendar/calendar.dart';
-import 'package:capstone_frontend/const/api_utils.dart';
-import 'package:capstone_frontend/screen/statistic/model/currentuser_model.dart';
-import 'package:capstone_frontend/noti_service.dart';
 import 'package:capstone_frontend/screen/home/home_screen.dart';
 import 'package:capstone_frontend/provider/emotion_manager.dart';
-import 'package:capstone_frontend/screen/statistic/model/weight_resp_model.dart';
-import 'package:capstone_frontend/screen/statistic/model/weight_send_model.dart';
 import 'package:capstone_frontend/screen/statistic/statistic_screen.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_sound/public/flutter_sound_recorder.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:audioplayers/audioplayers.dart' as audio_players;
-import 'package:uuid/uuid.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});

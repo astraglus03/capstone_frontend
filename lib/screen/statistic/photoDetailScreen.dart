@@ -121,7 +121,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 2),
-                                      child: Text(pItem.speechEmotion!.toSet().map((e) => '#$e').join(' ')  , style: TextStyle(color: Colors.grey[600])),
+                                      child: Text(pItem.absEmotion!.toSet().map((e) => '#$e').join(' ')  , style: TextStyle(color: Colors.grey[600])),
                                     ),
                                   ],
                                 ),

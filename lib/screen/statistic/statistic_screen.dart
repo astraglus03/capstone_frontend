@@ -40,6 +40,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
           title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -412,7 +413,6 @@ class _StatisticScreenState extends State<StatisticScreen> {
     for (String emotion in emotionLists) {
       translatedEmotions.add(emotionMap[emotion] ?? emotion);
     }
-
     // 변환된 감정 목록을 쉼표와 공백을 사용해 다시 조합
     return translatedEmotions.join(', ');
   }
@@ -450,33 +450,34 @@ class _StatisticScreenState extends State<StatisticScreen> {
               }
             },
           ),
-          Consumer<EmotionManager>(
-            builder: (context, emotionManager, child) {
-              return FutureBuilder<MonthFeedbackModel>(
-                future: sendRepEmo(UserManager().getUserId().toString(), emotionList),
-                builder: (_, AsyncSnapshot<MonthFeedbackModel> snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return _buildFeedbackSkeletonUI();
-                  } else if (snapshot.hasData) {
-                    return Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(snapshot.data!.feedback),
-                        ],
-                      ),
-                    );
-                  } else {
-                    return Center(
-                      child: _buildFeedbackSkeletonUI(),
-                    );
-                  }
-                },
-              );
-            },
-          ),
+          // Consumer<EmotionManager>(
+          //   builder: (context, emotionManager, child) {
+          //     return FutureBuilder<MonthFeedbackModel>(
+          //       future: sendRepEmo(UserManager().getUserId().toString(), emotionList),
+          //       builder: (_, AsyncSnapshot<MonthFeedbackModel> snapshot) {
+          //         if (snapshot.connectionState == ConnectionState.waiting) {
+          //           return _buildFeedbackSkeletonUI();
+          //         } else if (snapshot.hasData) {
+          //           return Padding(
+          //             padding: const EdgeInsets.all(12.0),
+          //             child: Column(
+          //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //               crossAxisAlignment: CrossAxisAlignment.start,
+          //               children: [
+          //                 // Text(snapshot.data!.feedback),
+          //                 Text('심종혜 심종혜 심종혜 배재민 배재민 배재민 김건동 김건동 김건동 박지용 박지용 박지용,심종혜 심종혜 심종혜 배재민 배재민 배재민 김건동 김건동 김건동 박지용 박지용 박지용'),
+          //               ],
+          //             ),
+          //           );
+          //         } else {
+          //           return Center(
+          //             child: _buildFeedbackSkeletonUI(),
+          //           );
+          //         }
+          //       },
+          //     );
+          //   },
+          // ),
         ],
       ),
     );
