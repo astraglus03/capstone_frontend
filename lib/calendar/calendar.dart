@@ -29,17 +29,23 @@ class _CalendarState extends State<Calendar> {
 
   void getSchedules() async {
     List<ScheduleRespModel> schedules = await respSchedule(userId!);
-
-    if(mounted){
       setState(() {
         for (var i in schedules) {
           DateTime date = DateTime.parse(i.date);
-          List<Event> existingEvents = [];
-          existingEvents.add(Event(i.date,i.content));
-          kEvents[date] = existingEvents;
+
+          if (kEvents.containsKey(date)) {
+            List<Event> existingEvents = kEvents[date]!;
+            bool isDuplicate = existingEvents.any((e) => e.title == i.content);
+
+            if (!isDuplicate) {
+              existingEvents.add(Event(i.date, i.content));
+            }
+          }
+          else {
+            kEvents[date] = [Event(i.date, i.content)];
+          }
         }
       });
-    }
   }
 
   @override
@@ -134,6 +140,8 @@ class _CalendarState extends State<Calendar> {
             onHeaderTapped: (date) {
               _showYearMonthPicker(context);
             },
+            availableGestures: AvailableGestures.all,
+            // pageJumpingEnabled: true,
             onDaySelected: _onDaySelected,
             onFormatChanged: (format) {
               if (_calendarFormat != format) {
@@ -145,6 +153,8 @@ class _CalendarState extends State<Calendar> {
             onPageChanged: (focusedDay) {
               _focusedDay = focusedDay;
             },
+            rowHeight: 70,
+            // daysOfWeekHeight: 30,
             calendarBuilders: CalendarBuilders(
               defaultBuilder: (context, day, focusedDay) {
                 // String? imageUrl = dateImageUrls[day];
@@ -158,10 +168,10 @@ class _CalendarState extends State<Calendar> {
                     shape: BoxShape.circle
                   );
                   return Container(
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 12.0,
-                            vertical: 4.0,
-                          ),
+                          // margin: const EdgeInsets.symmetric(
+                          //   horizontal: 12.0,
+                          //   vertical: 4.0,
+                          // ),
                           decoration: decoration,
                           alignment: Alignment.center,
                           child: Text(''),

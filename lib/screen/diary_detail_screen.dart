@@ -134,7 +134,10 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
             fontWeight: FontWeight.bold,
           ),),
           EmotionChangeChart(
-            absEmo: widget.photoDetail.absEmotion!.cast<String>(),
+              absEmo: widget.photoDetail.absEmotion!,
+              circumstance: widget.photoDetail.circumstance!,
+              changeEmotion: widget.photoDetail.changeEmotion!,
+              chatResponse: widget.photoDetail.AIChating!,
           ),
         ],
       ),

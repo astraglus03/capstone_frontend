@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 
 class EmotionChangeChart extends StatefulWidget {
   final List<String> absEmo;
+  final int circumstance;
+  final List<String> changeEmotion;
+  final List<String> chatResponse;
 
   const EmotionChangeChart({
     Key? key,
     required this.absEmo,
+    required this.circumstance,
+    required this.changeEmotion,
+    required this.chatResponse,
   }) : super(key: key);
 
   @override
@@ -21,7 +27,36 @@ class EmotionChangeChartState extends State<EmotionChangeChart> {
   @override
   Widget build(BuildContext context) {
     List<Widget> emotionWidgets = [];
-
+    List<String> emotionChanges = [];
+    for(int i=0; i<widget.changeEmotion.length; i++){
+      String imagePath2;
+      switch(widget.changeEmotion[i]){
+        case "중립":
+          imagePath2 = 'asset/emotion/neutral.png';
+          break;
+        case "슬픔":
+          imagePath2 = 'asset/emotion/sad.png';
+          break;
+        case "분노":
+          imagePath2 = 'asset/emotion/angry.png';
+          break;
+        case "행복":
+          imagePath2 = 'asset/emotion/happy.png';
+          break;
+        case "당황":
+          imagePath2 = 'asset/emotion/embarrassed.png';
+          break;
+        case "상처":
+          imagePath2 = 'asset/emotion/hurt.png';
+          break;
+        case "불안":
+          imagePath2 = 'asset/emotion/anxious.png';
+          break;
+        default:
+          imagePath2 = 'asset/view 1.webp';
+      }
+      emotionChanges.add(imagePath2);
+    }
     for (int i = 0; i < widget.absEmo.length; i++) {
       String imagePath;
       switch (widget.absEmo[i]) {
@@ -108,7 +143,8 @@ class EmotionChangeChartState extends State<EmotionChangeChart> {
               height: 75,
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('asset/emotion/neutral.png'),
+                  image: AssetImage(emotionChanges[0]),
+                  // image: AssetImage('asset/emotion/happy.png'),
                   fit: BoxFit.fitWidth,
                 ),
               ),
@@ -121,7 +157,8 @@ class EmotionChangeChartState extends State<EmotionChangeChart> {
               height: 75,
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('asset/emotion/neutral.png'),
+                  image: AssetImage(emotionChanges[1]),
+                  // image: AssetImage('asset/emotion/neutral.png'),
                   fit: BoxFit.fitWidth,
                 ),
               ),

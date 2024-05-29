@@ -219,7 +219,9 @@ class _StatisticScreenState extends State<StatisticScreen> {
               ],
             );
           } else {
-            return _buildloginskeletonUI();
+            return Center(
+              child: Text('데이터가 없습니다.'),
+            );
           }
         },
       ),
@@ -444,7 +446,9 @@ class _StatisticScreenState extends State<StatisticScreen> {
                   ),),
                 );
               } else if (snapshot.hasError) {
-                return Text('Error loading emotions');
+                return Center(
+                  child: Text('데이터를 불러오는 중 에러가 발생했습니다.'),
+                );
               } else {
                 return _buildFeedbackSkeletonUI();
               }

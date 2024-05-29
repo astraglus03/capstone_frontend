@@ -175,8 +175,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       // print(resp.body);
       if (resp.statusCode == 200) {
         List<dynamic> jsonData = resp.data;
-        var emotionList =
-            jsonData.map((item) => DiaryModel.fromJson(item)).toList();
+        var emotionList = jsonData.map((item) => DiaryModel.fromJson(item)).toList();
         print(emotionList.length);
         return emotionList;
       } else if (resp.statusCode == 404) {
@@ -611,26 +610,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(20.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${index + 1}일',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 30,
-                                ),
-                              ),
-                              // 사진 변경하기 버튼
-                              IconButton(
-                                onPressed: () {},
-                                icon: Icon(
-                                  Icons.more_horiz_outlined,
-                                  color: Colors.white,
-                                ),
-                              )
-                            ],
+                          child: Text(
+                            '${index + 1}일',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 30,
+                            ),
                           ),
                         ),
                       ),
@@ -644,8 +629,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         child: const Padding(
                             padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
                             child: Center(
-                                child: Text('일기가 없습니다.',
-                                    style: TextStyle(fontSize: 20)))),
+                                child: Text('일기가 없습니다.', style: TextStyle(fontSize: 20)))),
                       ),
                     );
                   },
