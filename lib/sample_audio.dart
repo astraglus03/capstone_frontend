@@ -42,7 +42,7 @@ class _SampleAudioScreenState extends State<SampleAudioScreen> {
     "친구가 맛있는거 사줘서 기분이 좋아!",
     "부모님이 생일선물로 자전거를 선물해줬어",
     "오늘은 친구들과 함께 놀이공원에 갔어!",
-    "퐁당이 어플을 만나서 행복해"
+    "퐁당이 어플을 만나서 행복해."
   ];
 
   @override
