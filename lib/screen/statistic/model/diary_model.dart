@@ -10,6 +10,7 @@ class DiaryModel {
   final List<String>? speechEmotion;
   final int? chatCount;
   final List<String>? absEmotion;
+  final String? feedback;
 
   DiaryModel({
     this.userId,
@@ -20,6 +21,7 @@ class DiaryModel {
     this.speechEmotion,
     this.chatCount,
     this.absEmotion,
+    this.feedback,
   });
 
   factory DiaryModel.fromJson(Map<String, dynamic> json) {
@@ -34,6 +36,7 @@ class DiaryModel {
       speechEmotion: json['speechEmotion'] != null ? List<String>.from(json['speechEmotion']) : [],
       chatCount: json['chatCount'] ?? 0,
       absEmotion: json['absEmotion'] != null ? List<String>.from(json['absEmotion']) : [],
+      feedback: json['feedback'] ?? '',
     );
   }
 }

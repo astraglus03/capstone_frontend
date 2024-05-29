@@ -1,4 +1,7 @@
 import 'package:capstone_frontend/const/api_utils.dart';
+import 'package:capstone_frontend/screen/statistic/model/currentuser_model.dart';
+import 'package:capstone_frontend/sample_audio.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone_frontend/screen/main_screen.dart';
 import 'package:capstone_frontend/login/login_page.dart';
@@ -14,6 +17,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
   Animation<double>? _scaleAnimation;
   bool isStopped = false;
   OverlayEntry? _overlayEntry;
+  final dio = Dio();
 
   @override
   void initState() {
@@ -43,6 +47,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
         vsync: this,
         duration: const Duration(seconds: 3)
     );
+
 
     _scaleAnimation = Tween<double>(begin: 1.0, end: 3.0).animate(
         CurvedAnimation(parent: _controller!, curve: Interval(0.0, 0.5, curve: Curves.easeIn))
@@ -76,10 +81,31 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     _overlayEntry?.remove();
     _overlayEntry = null;
   }
+  Future<CurrentUser?> getCurrentUser(String userId) async {
+    try {
+      final resp = await dio.get('$ip/userinfo/userinfo/$userId');
+
+      if (resp.statusCode == 200) {
+        return CurrentUser.fromJson(resp.data);
+      } else {
+        throw Exception('서버에서 정보를 가져오는 데 실패했습니다.');
+      }
+    } catch (e) {
+      print('에러 발생: $e');
+    }
+  }
 
   void goToNewPage() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MainScreen()));
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await getCurrentUser(UserManager().getUserId()!).then((value) {
+        print(value?.weight);
+        if(value?.weight != null){
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => MainScreen()));
+        }
+        else{
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => SampleAudioScreen()));
+        }
+      });
     });
   }
 

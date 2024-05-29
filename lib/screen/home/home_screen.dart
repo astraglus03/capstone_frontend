@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:capstone_frontend/calendar/utils.dart';
 import 'package:capstone_frontend/const/api_utils.dart';
 import 'package:capstone_frontend/screen/chatbot/chatbot_screen.dart';
-import 'package:capstone_frontend/screen/chatbot/q_and_a.dart';
+import 'package:capstone_frontend/screen/chatbot/q_and_a_screen.dart';
 import 'package:capstone_frontend/screen/diary_detail_screen.dart';
 import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/month_emotion_resp_model.dart';
@@ -25,8 +25,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   late AnimationController _animationcontroller;
   double offsetY = 0.0;
 
@@ -450,14 +449,6 @@ class _HomeScreenState extends State<HomeScreen>
                                         fontSize: 30,
                                       ),
                                     ),
-                                    // 사진 변경하기 버튼
-                                    // IconButton(
-                                    //   onPressed: () {},
-                                    //   icon: Icon(
-                                    //     Icons.more_horiz_outlined,
-                                    //     color: Colors.white,
-                                    //   ),
-                                    // )
                                   ],
                                 ),
                               ),
@@ -474,64 +465,69 @@ class _HomeScreenState extends State<HomeScreen>
                                   padding:
                                       const EdgeInsets.fromLTRB(10, 10, 10, 0),
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Flexible(
-                                        flex: 1,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            // Expanded(child: NotebookPaper(
-                                            //   title: '일기',
-                                            //   entireText: dayDiary.content!,
-                                            //   fontSize: 12.0,
-                                            //   rowHeight: 1.0,
-                                            //   width: double.infinity,
-                                            //   paperColor: Color.fromARGB(255, 253, 248, 184),
-                                            //   horizontalLinesColor: Colors.blue,
-                                            //   verticalLinesColor: Colors.pink,
-                                            //   pageTitle: true,
-                                            // )),
-                                            Text(
-                                              dayDiary.content!,
-                                              maxLines: 6,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              height: 10,
-                                            ),
-                                          ],
+                                      Expanded(
+                                        child: ListView.builder(
+                                          shrinkWrap: true,
+                                          itemCount: filteredDiaries.length,
+                                          itemBuilder: (context, index) {
+                                            return Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  '일기 내용',
+                                                  style: const TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  filteredDiaries[index].content!,
+                                                  maxLines: 6,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                                const SizedBox(
+                                                  height: 20,
+                                                ),
+                                                Text(
+                                                  '피드백',
+                                                  style: const TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  filteredDiaries[index].feedback!,
+                                                  overflow: TextOverflow.clip,
+                                                  maxLines: 8,
+                                                ),
+                                              ],
+                                            );
+                                          },
                                         ),
                                       ),
                                       Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                              dayDiary.textEmotion!
-                                                  .toSet()
-                                                  .map((e) => '#$e')
-                                                  .join(' '),
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w500,
-                                              )),
+                                            dayDiary.textEmotion!.toSet().map((e) => '#$e').join(' '),
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
                                           IconButton(
                                             onPressed: () {
-                                              Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                      builder: (_) =>
-                                                          DiaryDetailScreen(
-                                                            photoDetail:
-                                                                dayDiary,
-                                                          )));
+                                              Navigator.of(context).push(MaterialPageRoute(builder: (_) => DiaryDetailScreen(
+                                                    photoDetail: dayDiary,
+                                                  ),
+                                                ),
+                                              );
                                             },
                                             icon: Icon(
                                               Icons.more_horiz_outlined,
@@ -543,7 +539,8 @@ class _HomeScreenState extends State<HomeScreen>
                                       ),
                                     ],
                                   ),
-                                )),
+                                ),
+                            ),
                           );
                         } else {
                           return FlipCard(

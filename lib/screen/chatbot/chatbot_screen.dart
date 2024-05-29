@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:capstone_frontend/const/api_utils.dart';
-import 'package:capstone_frontend/const/currentuser_model.dart';
+import 'package:capstone_frontend/screen/statistic/model/currentuser_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/chat_create_diary_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/chat_resp_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/chat_send_model.dart';
 import 'package:capstone_frontend/screen/main_screen.dart';
 import 'package:capstone_frontend/screen/statistic/model/chat_threadid_model.dart';
+import 'package:capstone_frontend/screen/statistic/model/weight_resp_model.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -45,6 +46,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   int status = 0;
   int count = 0;
   String chattingNick ='';
+  late double weights=0;
   late ChatUser _currentUser = ChatUser(id: '1', firstName: '', lastName: '');
 
   final ChatUser _gptChatUser = ChatUser(id: '2', firstName: '퐁', lastName: '당');
@@ -105,6 +107,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
       if (resp.statusCode == 200) {
         setState(() {
+          weights = resp.data['weight'];
           _currentUser = ChatUser(
             id: '1',
             firstName: resp.data['nickname'].substring(0, 1),
@@ -231,8 +234,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     setState(() {
       is_Transcribing = true;
     });
-    final serviceAccount = ServiceAccount.fromString(
-        '${(await rootBundle.loadString('asset/stt-test-418715-4b9278f2d459.json'))}');
+    final serviceAccount = ServiceAccount.fromString('${(await rootBundle.loadString('asset/stt-test-418715-4b9278f2d459.json'))}');
     final speechToText = SpeechToText.viaServiceAccount(serviceAccount);
     final config = RecognitionConfig(
         encoding: AudioEncoding.LINEAR16,
@@ -408,11 +410,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   }
 
   Future<ChatRespModel?> sendMessage(ChatSendModel model) async {
-    var request =
-        http.MultipartRequest('POST', Uri.parse('$ip/Send_Message_Dairy/model'))
+    var request = http.MultipartRequest('POST', Uri.parse('$ip/Send_Message_Dairy/model'))
           ..fields['threadid'] = model.threadId
           ..fields['userid'] = model.userId
-          ..fields['content'] = model.content;
+          ..fields['content'] = model.content
+          ..fields['weight'] = model.weight.toString();
 
     if (model.audioFile != null) {
       request.files.add(await http.MultipartFile.fromPath(
@@ -427,11 +429,13 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       var data = jsonDecode(responseBody);
       // print(data);
       ChatRespModel respModel = ChatRespModel.fromJson(data);
-      setState(() {
-        message1 = respModel.message;
-        emotion = respModel.emotion;
-        status = respModel.status;
-      });
+      if(mounted) {
+        setState(() {
+          message1 = respModel.message;
+          emotion = respModel.emotion;
+          status = respModel.status;
+        });
+      }
       print(
           '서버로부터의 응답: ${data['message']}, 감정: ${data['emotion']}, status: ${data['status']}');
       if (status == 1 && count == 0) {
@@ -482,6 +486,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       threadId: threadId,
       content: m.text,
       audioFile: File(audioPath),
+      weight: weights,
     );
 
     await sendMessage(sendModel);

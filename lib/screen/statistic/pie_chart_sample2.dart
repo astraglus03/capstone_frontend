@@ -1,6 +1,7 @@
 import 'package:capstone_frontend/screen/statistic/resources/app_resources.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:capstone_frontend/screen/statistic/resources/indicator.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class PieChartSample2 extends StatefulWidget {
@@ -51,10 +52,12 @@ class _PieChart2State extends State<PieChartSample2> {
               ),
             ),
           ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: _buildIndicators(emotionCounts),
+          SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: _buildIndicators(emotionCounts),
+            ),
           ),
           const SizedBox(width: 10),
         ],

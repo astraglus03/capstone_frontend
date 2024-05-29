@@ -1,10 +1,24 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:capstone_frontend/calendar/calendar.dart';
+import 'package:capstone_frontend/const/api_utils.dart';
+import 'package:capstone_frontend/screen/statistic/model/currentuser_model.dart';
 import 'package:capstone_frontend/noti_service.dart';
 import 'package:capstone_frontend/screen/home/home_screen.dart';
 import 'package:capstone_frontend/provider/emotion_manager.dart';
+import 'package:capstone_frontend/screen/statistic/model/weight_resp_model.dart';
+import 'package:capstone_frontend/screen/statistic/model/weight_send_model.dart';
 import 'package:capstone_frontend/screen/statistic/statistic_screen.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_sound/public/flutter_sound_recorder.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:audioplayers/audioplayers.dart' as audio_players;
+import 'package:uuid/uuid.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -14,65 +28,16 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  late bool isrecord;
 
   @override
   void initState(){
-    isrecord = false;
-    NotificationService().showNotification(
-      title: '퐁당이',
-      body: '5월 17일 ADsP시험 어떠셨나요?',
-    );
+    // setPermissions();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Center(child: Text('사용자 감정 맞춤 조절')),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    SizedBox(height: 10),
-                    Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.black),
-                          ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Text('나는 친구때문에 화가 치밀어 올라', style: TextStyle(
-                          decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Text('화난 목소리로\n읽어주세요!!!', style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),),
-                    SizedBox(height: 10),
-                    if(isrecord)
-                      Image.asset('asset/loading.gif'),
-                    TextButton(
-                      onPressed: (){
-                        setState(() {
-                          isrecord = !isrecord;
-                        });
-                      },
-                      child: isrecord ? Text('녹음 중지') : Text('녹음 시작'),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-      );
-    });
+    // NotificationService().showNotification(
+    //   title: '퐁당이',
+    //   body: '5월 17일 ADsP시험 어떠셨나요?',
+    // );
+    super.initState();
   }
 
   final List<Widget> _MainWidgets = <Widget>[

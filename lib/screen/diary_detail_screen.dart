@@ -43,6 +43,7 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
             _pictureSliver(),
             _diarySliver(),
             if (_showEmotionSliver) _emotionSliver(),
+            _pieChartSliver(),
             _feedbackSliver(),
           ],
         ),
@@ -120,8 +121,8 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
     );
   }
 
-  // 일기 피드백
-  DefaultSliverContainer _feedbackSliver() {
+  // 일기 파이차트
+  DefaultSliverContainer _pieChartSliver() {
     return DefaultSliverContainer(
       height: 300,
       child: Column(
@@ -150,10 +151,26 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
             ],
           ),
           Expanded(
-            child: PieChartSample2(
-              emotionList: widget.photoDetail.absEmotion!,
-            ),
+            child: PieChartSample2(emotionList: widget.photoDetail.absEmotion!,),
           ),
+        ],
+      ),
+    );
+  }
+
+  DefaultSliverContainer _feedbackSliver() {
+    return DefaultSliverContainer(
+      height: 600,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('<피드백>', style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),),
+          SizedBox(height: 10,),
+          Text(widget.photoDetail.feedback!),
         ],
       ),
     );

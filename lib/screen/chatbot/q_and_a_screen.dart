@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:capstone_frontend/const/api_utils.dart';
-import 'package:capstone_frontend/const/currentuser_model.dart';
+import 'package:capstone_frontend/screen/statistic/model/currentuser_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/chat_threadid_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/q_and_a_resp_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/q_and_a_send_model.dart';

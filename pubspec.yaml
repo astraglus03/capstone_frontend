@@ -68,6 +68,7 @@ dependencies:
   responsive_notebook_background: ^1.0.1
   awesome_notifications: ^0.8.2
   flutter_local_notifications: ^17.1.2
+  uuid: ^4.4.0
 
 
 

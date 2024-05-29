@@ -20,29 +20,12 @@ class _CalendarState extends State<Calendar> {
   DateTime? _selectedDay;
   final userId = UserManager().getUserId();
 
-  // Map<DateTime, String> dateImageUrls = {
-  //   DateTime(2024, 5, 14): 'asset/img.webp',
-  //   DateTime(2024, 5, 25): 'asset/view 3.webp',
-  // };
-  // Map<DateTime, String> emotionColors = {};
-
-  // Future<List<ScheduleRespModel>> respSchedule(String userId, String date){
-  //   return dio.get('$ip/get_future_api/getfuture/$userId/$date', options: Options(
-  //       validateStatus: (status) => true
-  //   )).then((resp) {
-  //       print(resp.data);
-  //       if(resp.statusCode != 200) return <ScheduleRespModel>[];
-  //       return List<ScheduleRespModel>.from(resp.data.map((x) => ScheduleRespModel.fromJson(x)));
-  //   });
-  // }
-
   Future<List<ScheduleRespModel>> respSchedule(String userId){
     return dio.get('$ip/get_future_api/getfuture/$userId').then((resp) {
       if(resp.statusCode != 200) return <ScheduleRespModel>[];
       return List<ScheduleRespModel>.from(resp.data.map((x) => ScheduleRespModel.fromJson(x)));
     });
   }
-
 
   void getSchedules() async {
     List<ScheduleRespModel> schedules = await respSchedule(userId!);
@@ -58,7 +41,6 @@ class _CalendarState extends State<Calendar> {
       });
     }
   }
-
 
   @override
   void initState() {

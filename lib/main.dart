@@ -1,6 +1,7 @@
 import 'package:capstone_frontend/login/auth_page.dart';
 import 'package:capstone_frontend/noti_service.dart';
 import 'package:capstone_frontend/provider/provider_observer.dart';
+import 'package:capstone_frontend/sample_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';

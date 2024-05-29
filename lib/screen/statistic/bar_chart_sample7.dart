@@ -79,13 +79,13 @@ class _BarChartSample7State extends State<BarChartSample7> {
     //String emotionsString = widget.model[0].absTextCount.join(', ');
     //print('변환 값: $emotionsString');
 
-    if(emotionString=='')
-    {
-      emotionString = widget.model[0].representEmotion.join(', ');
-      // 한 달 대표 감정 보내주기
-      sendRepEmo(UserManager().getUserId()!, emotionString);
-      //print('변환 값: $emotionString');
-    }
+    // if(emotionString=='')
+    // {
+    //   emotionString = widget.model[0].representEmotion.join(', ');
+    //   // 한 달 대표 감정 보내주기
+    //   sendRepEmo(UserManager().getUserId()!, emotionString);
+    //   //print('변환 값: $emotionString');
+    // }
 
     return SingleChildScrollView(
       child: Padding(
@@ -285,13 +285,14 @@ class _BarChartSample7State extends State<BarChartSample7> {
   }
 
   // 한 달 피드백 <- 한 달 대표감정 보내기
-  Future<MonthFeedbackModel> sendRepEmo(String userId, String month_max_emotion) async {
+  Future<MonthFeedbackModel> sendRepEmo(String userId, List emotionList) async {
     final response = await http.post(
       Uri.parse('$ip/month_feedback_api/monthfeedback'),
       headers:{'Content-Type': 'application/json',},
       body: jsonEncode({
         "userId": userId,
-        "month_max_emotion": month_max_emotion,
+        "emotion_list": emotionList,
+        // "month_max_emotion": month_max_emotion,
       }),
     );
 
