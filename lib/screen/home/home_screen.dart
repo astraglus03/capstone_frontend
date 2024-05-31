@@ -240,8 +240,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   Future<DiaryMonthModel> getMonthEmotion() async {
-    final resp =
-        await dio.post('$ip/Count_Month_Emotion/countmonthemotion', data: {
+    final resp = await dio.post('$ip/Count_Month_Emotion/countmonthemotion', data: {
       'userId': userId,
       'month': DateFormat('yyyy-MM').format(DateTime.now()),
     });
@@ -515,7 +514,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            dayDiary.textEmotion!.toSet().map((e) => '#$e').join(' '),
+                                            dayDiary.absEmotion!.toSet().map((e) => '#$e').join(' '),
                                             style: TextStyle(
                                               fontSize: 11,
                                               fontWeight: FontWeight.w500,

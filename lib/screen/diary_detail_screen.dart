@@ -2,7 +2,7 @@ import 'package:capstone_frontend/const/default_sliver_padding2.dart';
 import 'package:capstone_frontend/screen/statistic/emotion_change_chart.dart';
 import 'package:capstone_frontend/screen/statistic/line_chart_sample1.dart';
 import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
-import 'package:capstone_frontend/screen/statistic/pie_chart_sample2.dart';
+import 'package:capstone_frontend/screen/statistic/pie_chart_eachday.dart';
 import 'package:flutter/material.dart';
 import'package:intl/intl.dart';
 import 'package:capstone_frontend/const/default_sliver_padding.dart';
@@ -134,10 +134,12 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
             fontWeight: FontWeight.bold,
           ),),
           EmotionChangeChart(
-              absEmo: widget.photoDetail.absEmotion!,
-              circumstance: widget.photoDetail.circumstance!,
-              changeEmotion: widget.photoDetail.changeEmotion!,
-              chatResponse: widget.photoDetail.AIChating!,
+            absEmo: widget.photoDetail.absEmotion ?? [],
+            circumstance: widget.photoDetail.circumstance ?? 0,
+            changeEmotion: widget.photoDetail.changeEmotion ?? [],
+            small_emotion: widget.photoDetail.small_emotion ?? [],
+            chatResponse: widget.photoDetail.AIChating ?? [],
+            changeComment: widget.photoDetail.changeComment ?? [],
           ),
         ],
       ),
@@ -173,7 +175,7 @@ class _DiaryDetailScreen extends State<DiaryDetailScreen> {
             ],
           ),
           Expanded(
-            child: PieChartSample2(emotionList: widget.photoDetail.absEmotion!,),
+            child: PieChartEachDay(emotionList: widget.photoDetail.absEmotion!,),
           ),
         ],
       ),

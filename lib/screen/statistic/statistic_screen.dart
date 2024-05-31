@@ -10,12 +10,16 @@ import 'package:capstone_frontend/screen/statistic/bar_chart_sample7.dart';
 import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
 import 'package:capstone_frontend/provider/emotion_manager.dart';
 import 'package:capstone_frontend/screen/statistic/model/month_feedback_model.dart';
+import 'package:capstone_frontend/screen/statistic/pie_chart_eachday.dart';
+import 'package:capstone_frontend/screen/statistic/pie_chart_case.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone_frontend/screen/statistic/photoDetailScreen.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:intl/intl.dart';
+import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 class StatisticScreen extends StatefulWidget {
   const StatisticScreen({super.key});
@@ -27,7 +31,9 @@ class StatisticScreen extends StatefulWidget {
 class _StatisticScreenState extends State<StatisticScreen> {
   late Future<List<DiaryMonthModel>> _emotionFuture;
   final TextEditingController memoController = TextEditingController();
+  final TextEditingController assistantController = TextEditingController();
   final FocusNode memoFocusNode = FocusNode();
+  final FocusNode assistantFocusNode = FocusNode();
   bool _isFocused = false; // 메모란에 포커스 여부
   final viewmodel = MainViewModel(KakaoLogin());
   String? userId = UserManager().getUserId();
@@ -70,7 +76,8 @@ class _StatisticScreenState extends State<StatisticScreen> {
             slivers: [
               _diaryInfoSliver(),
               _photoSliver(context),
-              _emotionSliver(),
+              // _emotionSliver(),
+              _piechartSliver(),
               _feedbackSliver(),
             ],
           ),
@@ -104,7 +111,9 @@ class _StatisticScreenState extends State<StatisticScreen> {
   @override
   void dispose() {
     memoController.dispose();
+    assistantController.dispose();
     memoFocusNode.dispose();
+    assistantFocusNode.dispose();
     super.dispose();
   }
 
@@ -133,7 +142,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
 
   DefaultSliverContainer _diaryInfoSliver() {
     return DefaultSliverContainer(
-      height: 150,
+      height: 200,
       child: FutureBuilder<CurrentUser?>(
         future: checkCurrentUser(userId!),
         builder: (_, AsyncSnapshot<CurrentUser?> snapshot) {
@@ -228,8 +237,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
     );
   }
 
-  Future<List<DiaryModel>> getPhoto(
-      String userId, String date, String month, String limit) async {
+  Future<List<DiaryModel>> getPhoto(String userId, String date, String month, String limit) async {
     final resp = await dio.post('$ip/Search_Diary_api/searchdiary', data: {
       'userId': userId,
       'date': date,
@@ -261,6 +269,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
           } else if (snapshot.connectionState == ConnectionState.waiting) {
             return _buildDiaryContainerUI();
           } else if (snapshot.hasData) {
+            print(snapshot.data![1].small_emotion);
             return Row(
               children: [
                 Expanded(
@@ -317,6 +326,108 @@ class _StatisticScreenState extends State<StatisticScreen> {
     );
   }
 
+  DefaultSliverContainer _piechartSliver(){
+    return DefaultSliverContainer(
+      height: 400,
+      child: FutureBuilder<List<DiaryMonthModel>>(
+        future: _emotionFuture,
+        builder: (_, AsyncSnapshot<List<DiaryMonthModel>> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return _buildGraphSkeletonUI();
+          } else if (snapshot.hasData) {
+            print(snapshot.data!.length);
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RichText(
+                  text: TextSpan(
+                    text: '1개월',
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontFamily: 'KCC-Ganpan'),
+                    children: <TextSpan>[
+                      TextSpan(text: ' 감정 변화 비율', style: TextStyle(color: Colors.black,fontWeight: FontWeight.normal)),
+                    ],
+                  ),
+                ),
+                SizedBox(height:20),
+                PieChartCase(emotionList: snapshot.data![0].cases),
+                SizedBox(height: 30,),
+                Text(snapshot.data![0].sendComment),
+                SizedBox(height:20),
+                TextFormField(
+                  controller: assistantController,
+                  focusNode: assistantFocusNode,
+                  decoration: InputDecoration(
+                    labelText: '메모',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    isDense: true,
+                  ),
+                  style: TextStyle(fontSize: 14),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () async{
+                      if(assistantController.text !=null){
+                        await sendToAssistant(userId!,assistantController.text);
+                        assistantController.text = '';
+                        assistantFocusNode.unfocus();
+                        showDialog(
+                          context: context,
+                          builder: (context){
+                            return AlertDialog(
+                              title: Text('전송 완료'),
+                              content: Text('메모가 전송되었습니다.'),
+                            );
+                          },
+                        );
+                        Future.delayed(Duration(seconds: 1), () {
+                          Navigator.of(context).pop();
+                        });
+                      }
+                      else{
+                        showDialog(
+                          context: context,
+                          builder: (context){
+                            return AlertDialog(
+                              title: Text('전송 실패'),
+                              content: Text('입력하고 다시 시도해주세요.'),
+                            );
+                          },
+                        );
+                        Future.delayed(Duration(seconds: 1), () {
+                          Navigator.of(context).pop();
+                        });
+                      }
+                    },
+                    child: Text('전송하기'),
+                  ),
+                ),
+              ],
+            );
+          } else {
+            return Center(
+              child: Text('데이터가 없습니다'),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Future<void> sendToAssistant(String userId, String memo) async{
+
+    final resp = await dio.post('$ip/user_feedback_api/userfeedback', data: {
+      'userId' : userId,
+      'content' : memo
+    });
+
+    if(resp.statusCode ==200){
+      print(resp.data);
+    }
+  }
+
   // 한 달 감정 카운트 그래프
   Future<List<DiaryMonthModel>> sendDiaryToBackend(
       String userId, String month) async {
@@ -340,42 +451,42 @@ class _StatisticScreenState extends State<StatisticScreen> {
       throw Exception('Failed to communicate with server');
     }
   }
-
-  DefaultSliverContainer _emotionSliver() {
-    return DefaultSliverContainer(
-      height: 470,
-      child: FutureBuilder<List<DiaryMonthModel>>(
-          future: sendDiaryToBackend(UserManager().getUserId().toString(), DateFormat('yyyy-MM').format(DateTime.now())),
-          builder: (_, AsyncSnapshot<List<DiaryMonthModel>> snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return _buildGraphSkeletonUI();
-            } else if (snapshot.hasData) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  RichText(
-                    text: TextSpan(
-                      text: '1개월 ',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontFamily: 'KCC-Ganpan'),
-                      children: <TextSpan>[
-                        TextSpan(text: '감정 변화 그래프.', style: TextStyle(color: Colors.black,fontWeight: FontWeight.normal)),
-                      ],
-                    ),
-                  ),
-                  BarChartSample7(
-                    model: snapshot.data!,
-                  ),
-                ],
-              );
-            } else {
-              return Center(
-                child: Text('데이터가 없습니다'),
-              );
-            }
-          }),
-    );
-  }
+  //
+  // DefaultSliverContainer _emotionSliver() {
+  //   return DefaultSliverContainer(
+  //     height: 470,
+  //     child: FutureBuilder<List<DiaryMonthModel>>(
+  //         future: sendDiaryToBackend(UserManager().getUserId().toString(), DateFormat('yyyy-MM').format(DateTime.now())),
+  //         builder: (_, AsyncSnapshot<List<DiaryMonthModel>> snapshot) {
+  //           if (snapshot.connectionState == ConnectionState.waiting) {
+  //             return _buildGraphSkeletonUI();
+  //           } else if (snapshot.hasData) {
+  //             return Column(
+  //               mainAxisAlignment: MainAxisAlignment.start,
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 RichText(
+  //                   text: TextSpan(
+  //                     text: '1개월 ',
+  //                     style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontFamily: 'KCC-Ganpan'),
+  //                     children: <TextSpan>[
+  //                       TextSpan(text: '감정 변화 그래프.', style: TextStyle(color: Colors.black,fontWeight: FontWeight.normal)),
+  //                     ],
+  //                   ),
+  //                 ),
+  //                 BarChartSample7(
+  //                   model: snapshot.data!,
+  //                 ),
+  //               ],
+  //             );
+  //           } else {
+  //             return Center(
+  //               child: Text('데이터가 없습니다'),
+  //             );
+  //           }
+  //         }),
+  //   );
+  // }
 
   Future<MonthFeedbackModel> sendRepEmo(String userId, List emotionList) async {
     try {
@@ -430,14 +541,17 @@ class _StatisticScreenState extends State<StatisticScreen> {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
                 final data = snapshot.data![0].absTextCount;
+                // print(data);
                 int total = data.reduce((a, b) => a + b);
-                List labels = ['netural', 'sad', 'happy', 'angry', 'embrassed', 'anxiety', 'hurt'];
+                // print(total);
+                List labels = ['netural', 'sad', 'angry', 'happy', 'anxiety', 'embrassed', 'hurt'];
                 for (int i = 0; i < data.length; i++) {
                   double percentage = (data[i] / total) * 100;
                   emotionList.add('${labels[i]} ${percentage.toStringAsFixed(1)}%');
                 }
+                // print(emotionList);
                 repEmo = translateEmotion(snapshot.data![0].representEmotion.join(', '));
-                // print(repEmo);
+                // print(snapshot.data![0].absTextCount);
                 return  Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: Text('한 달 동안의 대표 감정 :$repEmo', style: TextStyle(
@@ -454,34 +568,27 @@ class _StatisticScreenState extends State<StatisticScreen> {
               }
             },
           ),
-          // Consumer<EmotionManager>(
-          //   builder: (context, emotionManager, child) {
-          //     return FutureBuilder<MonthFeedbackModel>(
-          //       future: sendRepEmo(UserManager().getUserId().toString(), emotionList),
-          //       builder: (_, AsyncSnapshot<MonthFeedbackModel> snapshot) {
-          //         if (snapshot.connectionState == ConnectionState.waiting) {
-          //           return _buildFeedbackSkeletonUI();
-          //         } else if (snapshot.hasData) {
-          //           return Padding(
-          //             padding: const EdgeInsets.all(12.0),
-          //             child: Column(
-          //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //               crossAxisAlignment: CrossAxisAlignment.start,
-          //               children: [
-          //                 // Text(snapshot.data!.feedback),
-          //                 Text('심종혜 심종혜 심종혜 배재민 배재민 배재민 김건동 김건동 김건동 박지용 박지용 박지용,심종혜 심종혜 심종혜 배재민 배재민 배재민 김건동 김건동 김건동 박지용 박지용 박지용'),
-          //               ],
-          //             ),
-          //           );
-          //         } else {
-          //           return Center(
-          //             child: _buildFeedbackSkeletonUI(),
-          //           );
-          //         }
-          //       },
-          //     );
-          //   },
-          // ),
+          Consumer<EmotionManager>(
+            builder: (context, emotionManager, child) {
+              return FutureBuilder<MonthFeedbackModel>(
+                future: sendRepEmo(UserManager().getUserId().toString(), emotionList),
+                builder: (_, AsyncSnapshot<MonthFeedbackModel> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return _buildFeedbackSkeletonUI();
+                  } else if (snapshot.hasData) {
+                    return Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Text(snapshot.data!.feedback),
+                    );
+                  } else {
+                    return Center(
+                      child: _buildFeedbackSkeletonUI(),
+                    );
+                  }
+                },
+              );
+            },
+          ),
         ],
       ),
     );

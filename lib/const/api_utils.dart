@@ -1,6 +1,6 @@
 import 'dart:async';
 
-String ip = 'http://13.124.22.141:5000';
+String ip = 'http://13.125.247.142:5000';
 
 class UserManager {
   static final UserManager _instance = UserManager._internal();

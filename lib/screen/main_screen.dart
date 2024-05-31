@@ -30,7 +30,7 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _MainWidgets = <Widget>[
     HomeScreen(),
-    const Calendar(),
+    Calendar(),
     ChangeNotifierProvider(create: (context) => EmotionManager(), child: StatisticScreen()),
   ];
 

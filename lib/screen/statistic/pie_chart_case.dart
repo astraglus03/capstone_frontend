@@ -4,22 +4,24 @@ import 'package:capstone_frontend/screen/statistic/resources/indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class PieChartSample2 extends StatefulWidget {
-  final List<String> emotionList;
-
-  PieChartSample2({super.key, required this.emotionList});
+class PieChartCase extends StatefulWidget {
+  final List emotionList;
+  PieChartCase({super.key, required this.emotionList});
 
   @override
   _PieChart2State createState() => _PieChart2State();
 }
 
-class _PieChart2State extends State<PieChartSample2> {
+class _PieChart2State extends State<PieChartCase> {
   int touchedIndex = -1;
 
   @override
   Widget build(BuildContext context) {
-    final emotionCounts = _countEmotions(widget.emotionList);
-    final totalEmotions = widget.emotionList.length;
+    Map<String, int> emotionCounts = {
+      '감정변화 O':widget.emotionList[0],
+      '감정변화 X':widget.emotionList[1],
+    };
+    final totalEmotions = emotionCounts.values.reduce((value, element) => value + element);
     final List<PieChartSectionData> sections = _createChartSections(emotionCounts, totalEmotions);
 
     return AspectRatio(
@@ -65,13 +67,13 @@ class _PieChart2State extends State<PieChartSample2> {
     );
   }
 
-  Map<String, int> _countEmotions(List<String> emotions) {
-    Map<String, int> counts = {};
-    for (var emotion in emotions) {
-      counts[emotion] = (counts[emotion] ?? 0) + 1;
-    }
-    return counts;
-  }
+  // Map<String, int> _countEmotions(List emotions) {
+  //   Map<String, int> counts = {};
+  //   for (var emotion in emotions) {
+  //     counts[emotion] = (counts[emotion] ?? 0) + 1;
+  //   }
+  //   return counts;
+  // }
 
   List<PieChartSectionData> _createChartSections(Map<String, int> emotionCounts, int total) {
     List<PieChartSectionData> sections = [];

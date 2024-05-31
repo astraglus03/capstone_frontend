@@ -88,6 +88,8 @@ class RepresentNotifier extends StateNotifier<AsyncValue<DiaryMonthModel>> {
         speechCount: [],
         absTextCount: [],
         representEmotion: [],
+        cases: [],
+        sendComment: '',
       );
     } else {
       throw DioError(
