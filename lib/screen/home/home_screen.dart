@@ -13,8 +13,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:notebook_paper/notebook_paper.dart';
-import 'package:responsive_notebook_background/responsive_notebook_background.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:weather/weather.dart';
 
@@ -291,17 +289,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             image: DecorationImage(
-                                fit: BoxFit.cover, // 이미지가 컨테이너에 꽉 차도록 조정
+                                fit: BoxFit.cover,
                                 image: AssetImage(imagePath))),
                       );
                     }),
                   );
                 } else {
-                  return SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: _buildMonthEmotionSkeletonUI(),
-                  );
+                  return SizedBox.shrink();
                 }
               },
             ),

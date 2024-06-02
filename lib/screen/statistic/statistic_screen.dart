@@ -1,4 +1,7 @@
+import 'package:capstone_frontend/calendar/calendar.dart';
 import 'package:capstone_frontend/const/api_utils.dart';
+import 'package:capstone_frontend/screen/home/home_screen.dart';
+import 'package:capstone_frontend/screen/main_screen.dart';
 import 'package:capstone_frontend/screen/statistic/model/currentuser_model.dart';
 import 'package:capstone_frontend/const/default_sliver_padding.dart';
 import 'package:capstone_frontend/login/auth_page.dart';
@@ -42,24 +45,25 @@ class _StatisticScreenState extends State<StatisticScreen> {
   String feedback = '';
   String repEmo = '';
   List emotionList = [];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+          automaticallyImplyLeading: false,
           title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.settings),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.search),
-          ),
-        ],
-      )),
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.settings),
+              ),
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.search),
+              ),
+            ],
+          )),
       body: Stack(
         children: [
           Container(
@@ -71,18 +75,19 @@ class _StatisticScreenState extends State<StatisticScreen> {
             ),
           ),
           Padding(
-          padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 20),
-          child: CustomScrollView(
-            slivers: [
-              _diaryInfoSliver(),
-              _photoSliver(context),
-              // _emotionSliver(),
-              _piechartSliver(),
-              _feedbackSliver(),
-            ],
+            padding:
+                const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 20),
+            child: CustomScrollView(
+              slivers: [
+                _diaryInfoSliver(),
+                _photoSliver(context),
+                // _emotionSliver(),
+                _piechartSliver(),
+                _feedbackSliver(),
+              ],
+            ),
           ),
-        ),
-    ],
+        ],
       ),
     );
   }
@@ -90,16 +95,27 @@ class _StatisticScreenState extends State<StatisticScreen> {
   @override
   void initState() {
     super.initState();
-    _emotionFuture = sendDiaryToBackend(UserManager().getUserId().toString(), DateFormat('yyyy-MM').format(DateTime.now()));
+    _emotionFuture = sendDiaryToBackend(UserManager().getUserId().toString(),
+        DateFormat('yyyy-MM').format(DateTime.now()));
     _emotionFuture.then((data) {
-      final data1 = data[0].absTextCount;
+      final data1 = data[0].eventCount;
+      print(data1);
       int total = data1.reduce((a, b) => a + b);
-      List labels = ['netural', 'sad', 'happy', 'angry', 'embrassed', 'anxiety', 'hurt'];
+      List labels = [
+        'netural',
+        'sad',
+        'happy',
+        'angry',
+        'embrassed',
+        'anxiety',
+        'hurt'
+      ];
       for (int i = 0; i < data.length; i++) {
         double percentage = (data1[i] / total) * 100;
         emotionList.add('${labels[i]} ${percentage.toStringAsFixed(1)}%');
       }
-      Provider.of<EmotionManager>(context, listen: false).setRepEmo(emotionList);
+      Provider.of<EmotionManager>(context, listen: false)
+          .setRepEmo(emotionList);
       memoFocusNode.addListener(() {
         setState(() {
           _isFocused = memoFocusNode.hasFocus; // Update the focus status
@@ -181,7 +197,10 @@ class _StatisticScreenState extends State<StatisticScreen> {
                                   await viewmodel.logout();
                                   setState(() {
                                     userId = '';
-                                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AuthPage()));
+                                    Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => AuthPage()));
                                   });
                                 },
                                 child: Text('로그아웃'),
@@ -237,7 +256,8 @@ class _StatisticScreenState extends State<StatisticScreen> {
     );
   }
 
-  Future<List<DiaryModel>> getPhoto(String userId, String date, String month, String limit) async {
+  Future<List<DiaryModel>> getPhoto(
+      String userId, String date, String month, String limit) async {
     final resp = await dio.post('$ip/Search_Diary_api/searchdiary', data: {
       'userId': userId,
       'date': date,
@@ -281,7 +301,9 @@ class _StatisticScreenState extends State<StatisticScreen> {
                     itemBuilder: (BuildContext context, int index) {
                       return GestureDetector(
                         onTap: () {
-                          Navigator.push(context, MaterialPageRoute(
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
                               builder: (context) => DiaryDetailScreen(
                                 photoDetail: snapshot.data![index],
                               ),
@@ -326,7 +348,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
     );
   }
 
-  DefaultSliverContainer _piechartSliver(){
+  DefaultSliverContainer _piechartSliver() {
     return DefaultSliverContainer(
       height: 400,
       child: FutureBuilder<List<DiaryMonthModel>>(
@@ -343,24 +365,34 @@ class _StatisticScreenState extends State<StatisticScreen> {
                 RichText(
                   text: TextSpan(
                     text: '1개월',
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontFamily: 'KCC-Ganpan'),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        fontFamily: 'KCC-Ganpan'),
                     children: <TextSpan>[
-                      TextSpan(text: ' 감정 변화 비율', style: TextStyle(color: Colors.black,fontWeight: FontWeight.normal)),
+                      TextSpan(
+                          text: ' 감정 변화 비율',
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.normal)),
                     ],
                   ),
                 ),
-                SizedBox(height:20),
+                SizedBox(height: 20),
                 PieChartCase(emotionList: snapshot.data![0].cases),
-                SizedBox(height: 30,),
+                SizedBox(
+                  height: 30,
+                ),
                 Text(snapshot.data![0].sendComment),
-                SizedBox(height:20),
+                SizedBox(height: 20),
                 TextFormField(
                   controller: assistantController,
                   focusNode: assistantFocusNode,
                   decoration: InputDecoration(
                     labelText: '메모',
                     border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    contentPadding:
+                        EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                     isDense: true,
                   ),
                   style: TextStyle(fontSize: 14),
@@ -368,14 +400,15 @@ class _StatisticScreenState extends State<StatisticScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () async{
-                      if(assistantController.text !=null){
-                        await sendToAssistant(userId!,assistantController.text);
+                    onPressed: () async {
+                      if (assistantController.text != null) {
+                        await sendToAssistant(
+                            userId!, assistantController.text);
                         assistantController.text = '';
                         assistantFocusNode.unfocus();
                         showDialog(
                           context: context,
-                          builder: (context){
+                          builder: (context) {
                             return AlertDialog(
                               title: Text('전송 완료'),
                               content: Text('메모가 전송되었습니다.'),
@@ -385,11 +418,10 @@ class _StatisticScreenState extends State<StatisticScreen> {
                         Future.delayed(Duration(seconds: 1), () {
                           Navigator.of(context).pop();
                         });
-                      }
-                      else{
+                      } else {
                         showDialog(
                           context: context,
-                          builder: (context){
+                          builder: (context) {
                             return AlertDialog(
                               title: Text('전송 실패'),
                               content: Text('입력하고 다시 시도해주세요.'),
@@ -416,14 +448,11 @@ class _StatisticScreenState extends State<StatisticScreen> {
     );
   }
 
-  Future<void> sendToAssistant(String userId, String memo) async{
+  Future<void> sendToAssistant(String userId, String memo) async {
+    final resp = await dio.post('$ip/user_feedback_api/userfeedback',
+        data: {'userId': userId, 'content': memo});
 
-    final resp = await dio.post('$ip/user_feedback_api/userfeedback', data: {
-      'userId' : userId,
-      'content' : memo
-    });
-
-    if(resp.statusCode ==200){
+    if (resp.statusCode == 200) {
       print(resp.data);
     }
   }
@@ -451,6 +480,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
       throw Exception('Failed to communicate with server');
     }
   }
+
   //
   // DefaultSliverContainer _emotionSliver() {
   //   return DefaultSliverContainer(
@@ -490,7 +520,8 @@ class _StatisticScreenState extends State<StatisticScreen> {
 
   Future<MonthFeedbackModel> sendRepEmo(String userId, List emotionList) async {
     try {
-      final resp = await dio.post('$ip/month_feedback_api/monthfeedback', data: {
+      final resp =
+          await dio.post('$ip/month_feedback_api/monthfeedback', data: {
         'userId': userId,
         'emotion_list': emotionList,
         // 'emotion_list': emotionList,
@@ -539,32 +570,50 @@ class _StatisticScreenState extends State<StatisticScreen> {
           FutureBuilder<List<DiaryMonthModel>>(
             future: _emotionFuture,
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
-                final data = snapshot.data![0].absTextCount;
-                // print(data);
-                int total = data.reduce((a, b) => a + b);
-                // print(total);
-                List labels = ['netural', 'sad', 'angry', 'happy', 'anxiety', 'embrassed', 'hurt'];
-                for (int i = 0; i < data.length; i++) {
-                  double percentage = (data[i] / total) * 100;
-                  emotionList.add('${labels[i]} ${percentage.toStringAsFixed(1)}%');
-                }
+              if (snapshot.connectionState == ConnectionState.done &&
+                  snapshot.hasData) {
+                // final data = snapshot.data![0].absTextCount;
+                // // print(data);
+                // int total = data.reduce((a, b) => a + b);
+                // // print(total);
+                // List labels = ['netural', 'sad', 'angry', 'happy', 'anxiety', 'embrassed', 'hurt'];
+                // for (int i = 0; i < data.length; i++) {
+                //   double percentage = (data[i] / total) * 100;
+                //   emotionList.add('${labels[i]} ${percentage.toStringAsFixed(1)}%');
+                // }
                 // print(emotionList);
-                repEmo = translateEmotion(snapshot.data![0].representEmotion.join(', '));
+                repEmo = translateEmotion(
+                    snapshot.data![0].representEmotion.join(', '));
                 // print(snapshot.data![0].absTextCount);
-                return  Padding(
+                return Padding(
                   padding: const EdgeInsets.all(12.0),
-                  child: Text('한 달 동안의 대표 감정 :$repEmo', style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '한 달 동안의 대표 감정 :$repEmo',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: (){
+                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => Calendar()));
+                        },
+                        child: Text('캘린더로 가기'),
+                      ),
+                    ],
+                  ),
                 );
               } else if (snapshot.hasError) {
                 return Center(
                   child: Text('데이터를 불러오는 중 에러가 발생했습니다.'),
                 );
               } else {
-                return _buildFeedbackSkeletonUI();
+                return Center(
+                  child: Text('데이터가 없습니다.'),
+                );
               }
             },
           ),
@@ -582,7 +631,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
                     );
                   } else {
                     return Center(
-                      child: _buildFeedbackSkeletonUI(),
+                      child: Text('데이터가 없습니다'),
                     );
                   }
                 },
@@ -594,7 +643,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
     );
   }
 
-  Widget _buildFeedbackSkeletonUI(){
+  Widget _buildFeedbackSkeletonUI() {
     return Shimmer.fromColors(
       baseColor: Colors.grey[300]!,
       highlightColor: Colors.grey[100]!,
