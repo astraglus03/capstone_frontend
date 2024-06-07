@@ -1,7 +1,6 @@
 import 'package:capstone_frontend/screen/statistic/resources/app_resources.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:capstone_frontend/screen/statistic/resources/indicator.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class PieChartEachDay extends StatefulWidget {
@@ -72,16 +71,26 @@ class _PieChart2State extends State<PieChartEachDay> {
     }
     return counts;
   }
+  Map<String, Color> emotionColors = {
+    '화남': AppColors.contentColorRed,
+    '불안': AppColors.contentColorPurple,
+    '당황': AppColors.contentColorOrange,
+    '행복': AppColors.contentColorGreen,
+    '상처': AppColors.contentColorYellow,
+    '중립': Colors.grey,
+    '슬픔': AppColors.contentColorCyan,
+  };
 
   List<PieChartSectionData> _createChartSections(Map<String, int> emotionCounts, int total) {
     List<PieChartSectionData> sections = [];
     int i = 0;
+
     emotionCounts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value))  // 높은 빈도순으로 정렬
       ..forEach((entry) {
         final isTouched = i == touchedIndex;
         sections.add(PieChartSectionData(
-          color: AppColors.colors[i % AppColors.colors.length],
+          color: emotionColors[entry.key] ?? AppColors.colors[i % AppColors.colors.length],
           value: (entry.value / total * 100).toDouble(),
           title: '${(entry.value / total * 100).toInt()}%',
           radius: isTouched ? 60.0 : 50.0,
@@ -99,11 +108,12 @@ class _PieChart2State extends State<PieChartEachDay> {
 
   List<Widget> _buildIndicators(Map<String, int> emotionCounts) {
     List<Widget> indicators = [];
+
     emotionCounts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value))
       ..asMap().forEach((index, entry) {
         indicators.add(Indicator(
-          color: AppColors.colors[index % AppColors.colors.length],
+          color: emotionColors[entry.key] ?? AppColors.colors[index % AppColors.colors.length],
           text: entry.key,
           isSquare: true,
         ));

@@ -6,6 +6,7 @@ class DiaryMonthModel {
   final List cases;
   final String sendComment;
   final List<int> eventCount;
+  final String monthFeedback;
 
   DiaryMonthModel({
     required this.textCount,
@@ -15,6 +16,7 @@ class DiaryMonthModel {
     required this.cases,
     required this.sendComment,
     required this.eventCount,
+    required this.monthFeedback,
   });
 
   factory DiaryMonthModel.fromJson(Map<String, dynamic> json) {
@@ -36,6 +38,7 @@ class DiaryMonthModel {
       cases: cases,
       sendComment: json['sendComment'] ?? '',
       eventCount: List<int>.from(json['eventCount'] ?? []),
+      monthFeedback: json['month_feedback'] ?? '',
     );
   }
 }

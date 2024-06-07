@@ -322,10 +322,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   //Clova Api 연결, 문자, 감정, 감정의 강도, 음색
   Future<Uint8List> clovaTTS(String text, int emotion, int volume, int emotionStrength, int alpha, int speed) async {
     //키 값
-    const String clientId = '574nlmj8za';
-    const String clientSecret = 'pS4OXOd0H1AqPKUeLabIqlVwMv8VJZCCuynxstAe';
-    const String url =
-        'https://naveropenapi.apigw.ntruss.com/tts-premium/v1/tts';
+    const String clientId = 'fxl87exir6';
+    const String clientSecret = 'egimgo2mM6n7NcNq8EnsxUHFU5ssNpYQB3esAYNf';
+    const String url = 'https://naveropenapi.apigw.ntruss.com/tts-premium/v1/tts';
 
     //헤더
     Map<String, String> headers = {

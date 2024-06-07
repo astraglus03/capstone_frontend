@@ -1,9 +1,12 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:capstone_frontend/screen/statistic/model/diary_model.dart';
+import 'package:capstone_frontend/screen/statistic/model/month_emotion_resp_model.dart';
 import 'package:capstone_frontend/screen/statistic/model/schedule_resp_model.dart';
 import 'package:capstone_frontend/const/api_utils.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'utils.dart';
 import 'package:intl/intl.dart';
@@ -23,15 +26,16 @@ class _CalendarState extends State<Calendar> {
   DateTime? _selectedDay;
   final userId = UserManager().getUserId();
   late Future<List<DiaryModel>> changeEmotion;
-
-  Future<List<ScheduleRespModel>> respSchedule(String userId){
+  String feedback ='';
+  Future<List<ScheduleRespModel>> respSchedule(String userId) {
     return dio.get('$ip/get_future_api/getfuture/$userId').then((resp) {
-      if(resp.statusCode != 200) return <ScheduleRespModel>[];
-      return List<ScheduleRespModel>.from(resp.data.map((x) => ScheduleRespModel.fromJson(x)));
+      if (resp.statusCode != 200) return <ScheduleRespModel>[];
+      return List<ScheduleRespModel>.from(
+          resp.data.map((x) => ScheduleRespModel.fromJson(x)));
     });
   }
 
-  Future<List<DiaryModel>> respEmotions(String userId) async{
+  Future<List<DiaryModel>> respEmotions(String userId) async {
     final resp = await dio.post('$ip/Search_Diary_api/searchdiary', data: {
       'userId': userId,
       'date': 'None',
@@ -39,15 +43,38 @@ class _CalendarState extends State<Calendar> {
       'limit': 'None',
     });
 
-    if(resp.statusCode == 200){
-      return List<DiaryModel>.from(resp.data.map((x) => DiaryModel.fromJson(x)));
+    if (resp.statusCode == 200) {
+      return List<DiaryModel>.from(
+          resp.data.map((x) => DiaryModel.fromJson(x)));
     }
     return <DiaryModel>[];
   }
 
+  Future<List<DiaryMonthModel>> sendDiaryToBackend(
+      String userId, String month) async {
+    try {
+      final resp = await dio.post('$ip/Count_Month_Emotion/countmonthemotion', data: {
+        'userId': userId,
+        'month': month,
+      });
+      print(resp.data);
+
+      if (resp.statusCode == 200 && resp.data != '해당 날에 대한 감정 정보가 없습니다.') {
+        Map<String, dynamic> jsonData = resp.data;
+        // print([MonthEmotionRespModel.fromJson(jsonData)]);
+        return [DiaryMonthModel.fromJson(jsonData)]; // 단일 객체를 리스트로 변환
+      } else {
+        print('Failed to load data with status code: ${resp.statusCode}');
+        return <DiaryMonthModel>[];
+      }
+    } catch (e) {
+      print('An exception occurred: $e');
+      throw Exception('Failed to communicate with server');
+    }
+  }
+
   void getSchedules() async {
     List<ScheduleRespModel> schedules = await respSchedule(userId!);
-
     setState(() {
       for (var i in schedules) {
         DateTime date = DateTime.parse(i.date);
@@ -59,21 +86,31 @@ class _CalendarState extends State<Calendar> {
           if (!isDuplicate) {
             existingEvents.add(Event(i.date, i.content));
           }
-        }
-        else {
+        } else {
           kEvents[date] = [Event(i.date, i.content)];
         }
       }
     });
   }
 
+  void getMonthFeedback() async {
+    List<DiaryMonthModel> dm = await sendDiaryToBackend(userId!, DateFormat('yyyy-MM').format(_focusedDay));
+    setState(() {
+      if (dm[0].monthFeedback != feedback) {
+        feedback = dm[0].monthFeedback;
+        print('지금 변경됨');
+      }
+    });
+  }
+
   @override
-  void initState(){
+  void initState() {
     super.initState();
     getSchedules();
     changeEmotion = respEmotions(userId!);
     _selectedDay = _focusedDay;
     _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
+    getMonthFeedback();
   }
 
   @override
@@ -128,23 +165,23 @@ class _CalendarState extends State<Calendar> {
                 icon: const Icon(Icons.search),
               ),
             ],
-          )
-      ),
+          )),
       body: FutureBuilder<List<DiaryModel>>(
           future: changeEmotion,
-          builder:(context, AsyncSnapshot<List<DiaryModel>> snapshot){
-            if(snapshot.connectionState == ConnectionState.waiting){
-              return Center(child: Column(
+          builder: (context, AsyncSnapshot<List<DiaryModel>> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                  child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text('로딩 중...'),
-                  SizedBox(height:10),
+                  SizedBox(height: 10),
                   CircularProgressIndicator(),
                 ],
               ));
             }
-            if(snapshot.hasError){
+            if (snapshot.hasError) {
               return const Center(child: Text('에러가 발생했습니다.'));
             }
             final data = snapshot.data!;
@@ -172,8 +209,6 @@ class _CalendarState extends State<Calendar> {
                     formatButtonVisible: false, // 필요하지 않다면 포맷 버튼 숨기기
                     titleCentered: true, // 타이틀을 중앙에 위치
                     titleTextStyle: TextStyle(fontSize: 16.0), // 타이틀 텍스트 스타일 지정
-                    leftChevronIcon: Icon(Icons.arrow_back_ios, size: 15), // 좌측 화살표 아이콘
-                    rightChevronIcon: Icon(Icons.arrow_forward_ios, size: 15), // 우측 화살표 아이콘
                   ),
                   onHeaderTapped: (date) {
                     _showYearMonthPicker(context);
@@ -190,6 +225,7 @@ class _CalendarState extends State<Calendar> {
                   },
                   onPageChanged: (focusedDay) {
                     _focusedDay = focusedDay;
+                    getMonthFeedback();
                   },
                   rowHeight: 70,
                   // daysOfWeekHeight: 30,
@@ -208,10 +244,9 @@ class _CalendarState extends State<Calendar> {
                         );
                       }
                     },
-                    defaultBuilder:(context, day, focusedDay) {
-
-                      String getEmotionRoute(String emotion){
-                        switch(emotion){
+                    defaultBuilder: (context, day, focusedDay) {
+                      String getEmotionRoute(String emotion) {
+                        switch (emotion) {
                           case "중립":
                             return 'asset/emotion/neutral.png';
                           case "슬픔":
@@ -233,21 +268,21 @@ class _CalendarState extends State<Calendar> {
 
                       String? imageUrl;
                       for (var i in data) {
-                        if(DateFormat('yyyy-MM-dd').format(i.date!) == DateFormat('yyyy-MM-dd').format(day)){
+                        if (DateFormat('yyyy-MM-dd').format(i.date!) ==
+                            DateFormat('yyyy-MM-dd').format(day)) {
                           imageUrl = getEmotionRoute(i.changeEmotion![0]);
                           break;
                         }
                       }
 
                       BoxDecoration decoration;
-                      if(imageUrl !=null){
-
+                      if (imageUrl != null) {
                         decoration = BoxDecoration(
-                            image: DecorationImage(
-                              image: AssetImage(imageUrl),
-                              fit: BoxFit.contain,
-                            ),
-                            shape: BoxShape.rectangle,
+                          image: DecorationImage(
+                            image: AssetImage(imageUrl),
+                            fit: BoxFit.contain,
+                          ),
+                          shape: BoxShape.rectangle,
                         );
                         return Container(
                           // margin: const EdgeInsets.symmetric(
@@ -258,18 +293,16 @@ class _CalendarState extends State<Calendar> {
                           alignment: Alignment.center,
                           child: Text(''),
                         );
-                      }
-                      else{
-                        decoration = BoxDecoration(
-                            shape: BoxShape.circle
-                        );
+                      } else {
+                        decoration = BoxDecoration(shape: BoxShape.circle);
                         return Container(
                           decoration: decoration,
                           alignment: Alignment.center,
-                          child: Text('${day.day}', style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          )),
+                          child: Text('${day.day}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              )),
                         );
                       }
                     },
@@ -280,32 +313,52 @@ class _CalendarState extends State<Calendar> {
                   child: ValueListenableBuilder<List<Event>>(
                     valueListenable: _selectedEvents,
                     builder: (context, value, _) {
-                      return ListView.builder(
-                        itemCount: value.length,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: 12.0,
-                              vertical: 4.0,
+                      return CustomScrollView(
+                        slivers: [
+                          SliverList(
+                            delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 12.0,
+                                    vertical: 4.0,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(),
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                  child: ListTile(
+                                    onTap: () {},
+                                    title: Text('${value[index]}'),
+                                  ),
+                                );
+                              },
+                              childCount: value.length,
                             ),
-                            decoration: BoxDecoration(
-                              border: Border.all(),
-                              borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          SliverToBoxAdapter(
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 12.0,
+                                vertical: 4.0,
+                              ),
+                              decoration: BoxDecoration(
+                                border: Border.all(),
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                              child: ListTile(
+                                onTap: () {},
+                                title: Text(feedback),
+                              ),
                             ),
-                            child: ListTile(
-                              onTap: () {},
-                              title: Text('${value[index]}'),
-                            ),
-                          );
-                        },
+                          ),
+                        ],
                       );
                     },
                   ),
                 ),
               ],
             );
-          }
-      ),
+          }),
     );
   }
 }

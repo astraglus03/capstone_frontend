@@ -23,7 +23,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
   final userId = UserManager().getUserId();
   final dio = Dio();
 
-  Future<List<DiaryModel>> getPhoto(String userId, String date, String month, String limit) async {
+  Stream<List<DiaryModel>> getPhoto(String userId, String date, String month, String limit) async* {
 
     final resp = await dio.post('$ip/Search_Diary_api/searchdiary', data: {
       'userId': userId,
@@ -42,7 +42,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
         print(resp.data.length);  // 성공적으로 출력
 
         List<dynamic> data = resp.data;
-        return data.reversed.map((e) => DiaryModel.fromJson(e)).toList();
+        yield data.reversed.map((e) => DiaryModel.fromJson(e)).toList();
       } catch (e) {
         print('Error parsing photos: $e');  // 파싱 중 발생한 에러 출력
         throw Exception('Error parsing photos: $e');
@@ -66,8 +66,8 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
           ),
         ),
       ),
-      body: FutureBuilder<List<DiaryModel>>(
-        future: getPhoto(userId!, 'None', 'None','None'),
+      body: StreamBuilder<List<DiaryModel>>(
+        stream: getPhoto(userId!, 'None', 'None','None'),
         builder: (_, AsyncSnapshot<List<DiaryModel>> snapshot) {
           // print('데이터${snapshot.data}');
           if (snapshot.connectionState == ConnectionState.waiting) {

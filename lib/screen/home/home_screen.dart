@@ -166,7 +166,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       final resp = await dio.post('$ip/Search_Diary_api/searchdiary', data: {
         'userId': userId,
         'date': 'None',
-        'month': DateFormat('yyyy-MM').format(currentDate),
+        'month': 'None',
         'limit': 'None',
       });
 
@@ -266,13 +266,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 } else if (snapshot.hasData) {
                   final data = snapshot.data;
                   final emotionIconMap = {
-                    'sad': 'asset/sadEmoticon.webp',
-                    'happy': 'asset/happyEmoticon.webp',
-                    'angry': 'asset/angryEmoticon.webp',
-                    'embrassed': 'asset/embarrassedEmoticon.webp',
-                    'anxiety': 'asset/anxietyEmoticon.webp',
-                    'hurt': 'asset/hurtEmoticon.webp',
-                    'netural': 'asset/neutralEmoticon.webp',
+                    'sad': 'asset/emotion/sad.png',
+                    'happy': 'asset/emotion/happy.png',
+                    'angry': 'asset/emotion/angry.png',
+                    'embrassed': 'asset/emotion/embarrassed.png',
+                    'anxiety': 'asset/emotion/anxiety.png',
+                    'hurt': 'asset/emotion/hurt.png',
+                    'netural': 'asset/emotion/neutral.png',
                   };
                   return Row(
                     children:
@@ -341,8 +341,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           IconButton(
             icon: const ImageIcon(AssetImage('asset/conversation.png')),
             onPressed: () {
-              Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (_) => QandAScreen()));
+              Navigator.of(context).push(MaterialPageRoute(builder: (_) => QandAScreen()));
             }, // Q&A 페이지로 이동
           ),
         ],
@@ -381,6 +380,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return _buildContainerSkeletonUI();
               } else if (snapshot.hasData) {
+                // print(snapshot.data![0].date);
+                // print(snapshot.data![1].date);
                 final List<DiaryModel> diaries = snapshot.data!;
                 return GestureDetector(
                   onVerticalDragUpdate: onVerticalDragUpdate,
