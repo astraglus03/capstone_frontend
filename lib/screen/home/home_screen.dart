@@ -297,7 +297,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 } else {
                   return SizedBox.shrink();
                 }
-              },
+              }
             ),
             // _weather != null
             //     ? ImageIcon(

@@ -260,7 +260,7 @@ class _CalendarState extends State<Calendar> {
                           case "상처":
                             return 'asset/emotion/hurt.png';
                           case "불안":
-                            return 'asset/emotion/anxious.png';
+                            return 'asset/emotion/anxiety.png';
                           default:
                             return '';
                         }

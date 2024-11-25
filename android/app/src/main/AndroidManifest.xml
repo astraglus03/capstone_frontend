@@ -1,4 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <resources>
+        <string name="google_maps_api_key">${GOOGLE_MAPS_API_KEY}</string>
+        <string name="kakao_native_app_key">${KAKAO_NATIVE_APP_KEY}</string>
+    </resources>
+
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
@@ -28,7 +33,10 @@
 
                 <!-- "kakao${YOUR_NATIVE_APP_KEY}://oauth" 형식의 앱 실행 스킴 설정 -->
                 <!-- 카카오 로그인 Redirect URI -->
-                <data android:scheme="kakao1cf48672c2673ece9d56f59a5485150f" android:host='oauth'/>
+                <data
+                    android:scheme="@string/kakao_native_app_key"
+                    android:host="oauth" />
+
             </intent-filter>
         </activity>
         <activity
@@ -58,8 +66,9 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-        <meta-data android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyA7QMfoURCP0KlDSwA-ibssgdXWFBRTKXw"/>
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_api_key" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility?hl=en and
