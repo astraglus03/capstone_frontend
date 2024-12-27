@@ -1,16 +1,77 @@
-# capstone_frontend
+# 프로젝트: 능동적인 AI를 이용한 감정 케어 서비스
 
-A new Flutter project.
+---
 
-## Getting Started
+## 📋 목차
 
-This project is a starting point for a Flutter application.
+1. [주제 소개 및 목적](#주제-소개-및-목적)
+2. [기술 스택 및 시스템 구성도](#기술-스택-및-시스템-구성도)
+3. [애플리케이션 시연](#애플리케이션-시연)
+4. [차별점 및 효과](#차별점-및-효과)
+5. [기대효과](#기대효과)
+6. [팀원 및 역할 소개](#팀원-및-역할-소개)
 
-A few resources to get you started if this is your first Flutter project:
+---
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 1️⃣ 주제 소개 및 목적
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+2023년도 흉기 난동 사건과 같은 모방 범죄가 연쇄적으로 발생하며 사회적 문제가 되었습니다. 이를 해결하기 위해, 
+능동적인 AI 기반의 감정 케어 서비스를 개발하여 사용자들의 감정 관리를 돕고, 심리적 안정을 제공하고자 합니다.
+
+---
+
+## 2️⃣ 기술 스택 및 시스템 구성도
+
+### 기술 스택
+- **FE**: Flutter
+- **BE**: Spring Boot
+- **AI**: OpenAI API, Naver TTS
+
+### 시스템 구성도
+- **클라우드**: AWS EC2, Public Subnet
+- **AI 모델**: 감정 분석, 대화 피드백, 일정 관리
+
+### 주요 서비스
+- 로그인 및 사용자 기본 정보 관리
+- 감정 변화 그래프 및 피드백 제공
+- 음성 및 텍스트 감정 분석
+
+---
+
+## 3️⃣ 애플리케이션 시연
+
+- 사용자 맞춤형 감정 분석 및 피드백 제공
+- 대화 내용에 기반한 일정 생성 및 알림
+- 일기 작성 자동화 및 감정 변화 추적
+
+---
+
+## 4️⃣ 차별점 및 효과
+
+### 차별점
+- AI를 이용한 개인 맞춤형 감정 케어
+- 공감 대화를 통한 심리적 안정 제공
+
+### 효과
+- 일기 작성으로 감정 기복의 원인 분석 가능
+- 사용자 스스로 감정 조절 능력 향상
+
+---
+
+## 5️⃣ 기대효과
+
+1. 흉악 범죄 발생률 감소
+2. 전문 심리 케어 서비스로 발전 가능성
+3. 사용자 만족도를 높이는 개인화 서비스 제공
+
+---
+
+## 6️⃣ 팀원 및 역할 소개
+
+- **FE 개발**: 김건동, 심종혜
+- **BE 개발**: 배재민, 박지용
+- **AI 모델링**: 김건동
+
+---
+
+## 🎉 감사합니다
