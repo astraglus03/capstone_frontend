@@ -1,0 +1,4 @@
+const ACCESS_TOKEN_KEY = 'ACCESS_TOKEN';
+const REFRESH_TOKEN_KEY = 'REFRESH_TOKEN';
+
+const ip = 'http://13.125.247.142:5000';
