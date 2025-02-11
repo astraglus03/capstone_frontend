@@ -1,16 +1,15 @@
 import 'dart:io';
 import 'package:capstone_frontend/common/const/const.dart';
 import 'package:capstone_frontend/common/view/root_tab.dart';
-import 'package:capstone_frontend/login/social_api/auth_api.dart';
+import 'package:capstone_frontend/user/social_api/auth_api.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart' as audio_players;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
-
-import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_sound/flutter_sound.dart';
 
 class SampleAudioScreen extends StatefulWidget {
   const SampleAudioScreen({Key? key}) : super(key: key);

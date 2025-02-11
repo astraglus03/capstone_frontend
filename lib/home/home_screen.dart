@@ -6,8 +6,7 @@ import 'package:capstone_frontend/common/utils/utils.dart';
 import 'package:capstone_frontend/home/diary_detail_screen.dart';
 import 'package:capstone_frontend/home/models/diary_model.dart';
 import 'package:capstone_frontend/home/models/month_emotion_resp_model.dart';
-import 'package:capstone_frontend/login/social_api/auth_api.dart';
-import 'package:carousel_slider/carousel_slider.dart' as carousel;
+import 'package:capstone_frontend/user/social_api/auth_api.dart';
 import 'package:dio/dio.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:flutter/cupertino.dart';
@@ -15,6 +14,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:carousel_slider/carousel_controller.dart';
 import 'package:weather/weather.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -33,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   // Weather? _weather;
   DateTime currentDate = DateTime.now();
   late int daysInMonth;
-  late carousel.CarouselController carouselController;
+  final CarouselController carouselController = CarouselController();
   final userId = UserManager().getUserId();
   final dio = Dio();
   Future<List<DiaryModel>>? emotionListFuture;
@@ -43,7 +44,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void initState() {
     super.initState();
     daysInMonth = _daysInMonth(currentDate);
-    carouselController = carousel.CarouselController();
     _animationcontroller =
         AnimationController(vsync: this, duration: Duration(milliseconds: 300));
     _animationcontroller.addListener(() {
@@ -71,6 +71,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   void dispose() {
     _animationcontroller.dispose();
+    // carouselController.dispose();
     super.dispose();
   }
 
@@ -101,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     setState(() {
       currentDate = DateTime(newYear, newMonth, newDay);
       daysInMonth = _daysInMonth(currentDate);
-      carouselController.jumpToPage(newDay - 1);
+      carouselController.jumpTo(newDay-1);
     });
   }
 
@@ -118,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         });
         Future.delayed(Duration(milliseconds: 200), () {
           final selectedDay = selectedDate.day;
-          carouselController.jumpToPage(selectedDay - 1);
+          carouselController.jumpTo(selectedDay - 1);
         });
       },
     );
@@ -193,10 +194,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return Shimmer.fromColors(
       baseColor: Colors.grey[300]!,
       highlightColor: Colors.grey[100]!,
-      child: carousel.CarouselSlider.builder(
+      child: CarouselSlider.builder(
         itemCount: daysInMonth,
-        carouselController: carouselController,
-        options: carousel.CarouselOptions(
+        // carouselController: carouselController,
+        options: CarouselOptions(
           height: 440,
           enlargeCenterPage: true,
           aspectRatio: 16 / 9,
@@ -389,10 +390,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   onVerticalDragEnd: onVerticalDragEnd,
                   child: Transform.translate(
                     offset: Offset(0, offsetY),
-                    child: carousel.CarouselSlider.builder(
+                    child: CarouselSlider.builder(
                       itemCount: daysInMonth,
-                      carouselController: carouselController,
-                      options: carousel.CarouselOptions(
+                      // carouselController: carouselController,
+                      options: CarouselOptions(
                         height: 440,
                         enlargeCenterPage: true,
                         aspectRatio: 16 / 9,
@@ -579,10 +580,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   ),
                 );
               } else {
-                return carousel.CarouselSlider.builder(
+                return CarouselSlider.builder(
                   itemCount: daysInMonth,
-                  carouselController: carouselController,
-                  options: carousel.CarouselOptions(
+                  // carouselController: carouselController,
+                  options: CarouselOptions(
                     height: 440,
                     enlargeCenterPage: true,
                     aspectRatio: 16 / 9,

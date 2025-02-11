@@ -44,3 +44,14 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Sensitive files with API keys
+/lib/common/const/api_keys.dart
+/android/app/src/main/res/values/secrets.xml
+/android/local.properties
+/ios/Runner/Info.plist
+
+# Template files that will be committed
+!/lib/common/const/api_keys.dart.template
+!/android/app/src/main/res/values/secrets.xml.template
+!/android/local.properties.template

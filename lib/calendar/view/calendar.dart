@@ -1,8 +1,8 @@
 import 'package:capstone_frontend/common/const/const.dart';
 import 'package:capstone_frontend/home/models/diary_model.dart';
 import 'package:capstone_frontend/home/models/month_emotion_resp_model.dart';
-import 'package:capstone_frontend/login/social_api/auth_api.dart';
 import 'package:capstone_frontend/statistic/models/schedule_resp_model.dart';
+import 'package:capstone_frontend/user/social_api/auth_api.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

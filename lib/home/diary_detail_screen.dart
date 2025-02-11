@@ -1,9 +1,9 @@
 import 'package:capstone_frontend/common/component/default_sliver_padding2.dart';
 import 'package:capstone_frontend/home/models/diary_model.dart';
-import 'package:capstone_frontend/login/social_api/auth_api.dart';
 import 'package:capstone_frontend/statistic/view/emotion_change_chart.dart';
 import 'package:capstone_frontend/statistic/view/line_chart_sample1.dart';
 import 'package:capstone_frontend/statistic/view/pie_chart_eachday.dart';
+import 'package:capstone_frontend/user/social_api/auth_api.dart';
 import 'package:flutter/material.dart';
 import'package:intl/intl.dart';
 

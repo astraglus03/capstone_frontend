@@ -1,16 +1,22 @@
+// intercept 1) 요청 보낼때 2) 응답 받을때 3) 에러 났을때
+
 import 'package:capstone_frontend/common/const/const.dart';
 import 'package:capstone_frontend/common/secure_storage/secure_storage.dart';
+import 'package:capstone_frontend/user/view_models/auth_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-final dioProvider = Provider<Dio>((ref) {
+final dioProvider = Provider<Dio>((ref){
   final dio = Dio();
   final storage = ref.watch(secureStorageProvider);
-  dio.interceptors.add(CustomInterceptor(storage: storage, ref: ref));
+  dio.interceptors.add(
+    CustomInterceptor(storage: storage,ref: ref),
+  );
 
   return dio;
 });
+
 
 class CustomInterceptor extends Interceptor {
   final FlutterSecureStorage storage;
@@ -21,9 +27,9 @@ class CustomInterceptor extends Interceptor {
     required this.ref,
   });
 
+  // 1) 요청을 했을때
   @override
-  void onRequest(
-      RequestOptions options, RequestInterceptorHandler handler) async {
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     print('[REQ] [${options.method}] ${options.uri}');
     if (options.headers['accessToken'] == 'true') {
       // 헤더 삭제
@@ -33,7 +39,7 @@ class CustomInterceptor extends Interceptor {
 
       // 실제 토큰으로 대체
       options.headers.addAll({
-        'Authorization': 'Bearer $token',
+        'authorization': 'Bearer $token',
       });
     }
 
@@ -56,8 +62,7 @@ class CustomInterceptor extends Interceptor {
   // 2) 요청을 받을때
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    print(
-        '[RES] [${response.requestOptions.method}] ${response.requestOptions.uri}');
+    print('[RES] [${response.requestOptions.method}] ${response.requestOptions.uri}');
     // TODO: implement onResponse
     super.onResponse(response, handler);
   }
@@ -76,14 +81,12 @@ class CustomInterceptor extends Interceptor {
     }
 
     final isStatus401 = err.response?.statusCode == 401;
-    // TODO: API에 맞게 변경 필요
     final isPathRefresh = err.requestOptions.path == '/auth/token';
 
     if (isStatus401 && !isPathRefresh) {
       final dio = Dio();
 
       try {
-        // TODO: API에 맞게 변경 필요
         final resp = await dio.post('http://$ip/auth/token',
             options:
             Options(headers: {'authorization': 'Bearer $refreshToken'}));
@@ -99,7 +102,7 @@ class CustomInterceptor extends Interceptor {
 
         return handler.resolve(response);
       } on DioError catch (e) {
-        // ref.read(authProvider.notifier).logout();
+        ref.read(authProvider.notifier).logout();
       }
     }
 
