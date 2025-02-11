@@ -86,7 +86,7 @@
 
 - **FE 개발**: 김건동, 심종혜
 - **BE 개발**: 배재민, 박지용
-- **AI 모델링**: 김건동
+- **AI 모델링 및 학습**: 김건동
 
 ![슬라이드22](https://github.com/user-attachments/assets/fa8412ea-a9fc-4939-85ac-213a8a2d2709)
 ![슬라이드23](https://github.com/user-attachments/assets/2f6c7b56-4743-4ac2-8f36-c2cf8b6137c2)
