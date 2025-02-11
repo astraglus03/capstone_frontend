@@ -1,3 +1,4 @@
+import 'package:capstone_frontend/common/view/root_tab.dart';
 import 'package:capstone_frontend/common/view/splash_screen.dart';
 import 'package:capstone_frontend/user/models/user_model.dart';
 import 'package:capstone_frontend/user/view/login_screen.dart';
@@ -34,18 +35,18 @@ class AuthProvider extends ChangeNotifier {
       name: LoginScreen.routeName,
       builder: (_, __) => LoginScreen(),
     ),
-    // GoRoute(
-    //   path: '/',
-    //   name: RootTab.routeName,
-    //   builder: (context, state) => RootTab(),
-    //   routes: [
-    //     GoRoute(
-    //       path: 'terms',
-    //       name: TermsScreen.routeName,
-    //       builder: (_, state) => TermsScreen(),
-    //     ),
-    //   ],
-    // ),
+    GoRoute(
+      path: '/',
+      name: RootTab.routeName,
+      builder: (context, state) => RootTab(),
+      routes: [
+        // GoRoute(
+        //   path: 'terms',
+        //   name: TermsScreen.routeName,
+        //   builder: (_, state) => TermsScreen(),
+        // ),
+      ],
+    ),
     // GoRoute(
     //   path: '/map',
     //   name: MapScreen.routeName,

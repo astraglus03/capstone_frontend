@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class RootTab extends StatefulWidget {
+  static String get routeName => 'rootTab';
   const RootTab({super.key});
 
   @override
