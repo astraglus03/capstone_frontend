@@ -6,7 +6,6 @@ import 'package:capstone_frontend/common/utils/utils.dart';
 import 'package:capstone_frontend/home/diary_detail_screen.dart';
 import 'package:capstone_frontend/home/models/diary_model.dart';
 import 'package:capstone_frontend/home/models/month_emotion_resp_model.dart';
-import 'package:capstone_frontend/user/social_api/auth_api.dart';
 import 'package:dio/dio.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:flutter/cupertino.dart';
@@ -35,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   DateTime currentDate = DateTime.now();
   late int daysInMonth;
   final CarouselController carouselController = CarouselController();
-  final userId = UserManager().getUserId();
+  // final userId = UserManager().getUserId();
   final dio = Dio();
   Future<List<DiaryModel>>? emotionListFuture;
   Future<DiaryMonthModel>? monthEmotion;
@@ -56,8 +55,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   void initialize() {
-    emotionListFuture = getListEmotion();
-    monthEmotion = getMonthEmotion();
+    // emotionListFuture = getListEmotion();
+    // monthEmotion = getMonthEmotion();
   }
 
   // 슬라이드 넘길 때도 날짜 업데이트 하기 위한 코드
@@ -135,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   // 카루셀 슬라이더 위아래 드래그로 챗봇스크린 이동
   void onVerticalDragEnd(DragEndDetails details) {
     if (offsetY > 100 || offsetY < -70) {
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => ChatbotScreen()));
+      // Navigator.of(context).push(MaterialPageRoute(builder: (_) => ChatbotScreen()));
     }
     _animationcontroller.reverse(from: offsetY);
   }
@@ -162,33 +161,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   //   }
   // }
 
-  Future<List<DiaryModel>> getListEmotion() async {
-    print(DateFormat('yyyy-MM').format(currentDate));
-    try {
-      final resp = await dio.post('$ip/Search_Diary_api/searchdiary', data: {
-        'userId': userId,
-        'date': 'None',
-        'month': 'None',
-        'limit': 'None',
-      });
-
-      // print(resp.body);
-      if (resp.statusCode == 200) {
-        List<dynamic> jsonData = resp.data;
-        var emotionList = jsonData.map((item) => DiaryModel.fromJson(item)).toList();
-        print(emotionList.length);
-        return emotionList;
-      } else if (resp.statusCode == 404) {
-        // 데이터가 없을 때 404 오류를 반환하는 경우에도 빈 리스트를 반환하도록 처리
-        return [];
-      } else {
-        throw Exception('Failed to load data ${resp.statusCode}');
-      }
-    } catch (e) {
-      print('Error parsing photos: $e');
-      throw Exception('Error parsing photos: $e');
-    }
-  }
+  // Future<List<DiaryModel>> getListEmotion() async {
+  //   print(DateFormat('yyyy-MM').format(currentDate));
+  //   try {
+  //     final resp = await dio.post('$ip/Search_Diary_api/searchdiary', data: {
+  //       'userId': userId,
+  //       'date': 'None',
+  //       'month': 'None',
+  //       'limit': 'None',
+  //     });
+  //
+  //     // print(resp.body);
+  //     if (resp.statusCode == 200) {
+  //       List<dynamic> jsonData = resp.data;
+  //       var emotionList = jsonData.map((item) => DiaryModel.fromJson(item)).toList();
+  //       print(emotionList.length);
+  //       return emotionList;
+  //     } else if (resp.statusCode == 404) {
+  //       // 데이터가 없을 때 404 오류를 반환하는 경우에도 빈 리스트를 반환하도록 처리
+  //       return [];
+  //     } else {
+  //       throw Exception('Failed to load data ${resp.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     print('Error parsing photos: $e');
+  //     throw Exception('Error parsing photos: $e');
+  //   }
+  // }
 
   Widget _buildContainerSkeletonUI() {
     return Shimmer.fromColors(
@@ -239,18 +238,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  Future<DiaryMonthModel> getMonthEmotion() async {
-    final resp = await dio.post('$ip/Count_Month_Emotion/countmonthemotion', data: {
-      'userId': userId,
-      'month': DateFormat('yyyy-MM').format(DateTime.now()),
-    });
-
-    if (resp.statusCode == 200) {
-      return DiaryMonthModel.fromJson(resp.data);
-    } else {
-      throw Exception('Failed to load data');
-    }
-  }
+  // Future<DiaryMonthModel> getMonthEmotion() async {
+  //   final resp = await dio.post('$ip/Count_Month_Emotion/countmonthemotion', data: {
+  //     'userId': userId,
+  //     'month': DateFormat('yyyy-MM').format(DateTime.now()),
+  //   });
+  //
+  //   if (resp.statusCode == 200) {
+  //     return DiaryMonthModel.fromJson(resp.data);
+  //   } else {
+  //     throw Exception('Failed to load data');
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -343,7 +342,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           IconButton(
             icon: const ImageIcon(AssetImage('asset/conversation.png')),
             onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (_) => QandAScreen()));
+              // Navigator.of(context).push(MaterialPageRoute(builder: (_) => QandAScreen()));
             }, // Q&A 페이지로 이동
           ),
         ],
@@ -519,11 +518,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                           ),
                                           IconButton(
                                             onPressed: () {
-                                              Navigator.of(context).push(MaterialPageRoute(builder: (_) => DiaryDetailScreen(
-                                                    photoDetail: dayDiary,
-                                                  ),
-                                                ),
-                                              );
+                                              // Navigator.of(context).push(MaterialPageRoute(builder: (_) => DiaryDetailScreen(
+                                              //       photoDetail: dayDiary,
+                                              //     ),
+                                              //   ),
+                                              // );
                                             },
                                             icon: Icon(
                                               Icons.more_horiz_outlined,

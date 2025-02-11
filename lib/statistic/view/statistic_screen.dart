@@ -6,7 +6,6 @@ import 'package:capstone_frontend/home/models/diary_model.dart';
 import 'package:capstone_frontend/home/models/month_emotion_resp_model.dart';
 import 'package:capstone_frontend/statistic/view/photoDetailScreen.dart';
 import 'package:capstone_frontend/statistic/view/pie_chart_case.dart';
-import 'package:capstone_frontend/user/social_api/auth_api.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
@@ -27,7 +26,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
   final FocusNode assistantFocusNode = FocusNode();
   final bool _isFocused = false; // 메모란에 포커스 여부
   // final viewmodel = MainViewModel(KakaoLogin());
-  String? userId = UserManager().getUserId();
+  // String? userId = UserManager().getUserId();
   final String limit = '2';
   final dio = Dio();
   String feedback = '';
@@ -68,7 +67,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
             child: CustomScrollView(
               slivers: [
                 // _diaryInfoSliver(),
-                _photoSliver(context),
+                // _photoSliver(context),
                 // _emotionSliver(),
                 _piechartSliver(),
                 _feedbackSliver(),
@@ -83,7 +82,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
   @override
   void initState() {
     super.initState();
-    _emotionFuture = sendDiaryToBackend(UserManager().getUserId().toString(), DateFormat('yyyy-MM').format(DateTime.now()));
+    // _emotionFuture = sendDiaryToBackend(UserManager().getUserId().toString(), DateFormat('yyyy-MM').format(DateTime.now()));
     // _emotionFuture.then((data) {
     //   final data1 = data[0].eventCount;
     //   // print(data1);
@@ -265,76 +264,76 @@ class _StatisticScreenState extends State<StatisticScreen> {
     }
   }
 
-  DefaultSliverContainer _photoSliver(BuildContext context) {
-    return DefaultSliverContainer(
-      height: 200,
-      child: FutureBuilder<List<DiaryModel>>(
-        future: getPhoto(userId!, 'None', 'None', limit),
-        builder: (_, AsyncSnapshot<List<DiaryModel>> snapshot) {
-          if (snapshot.hasError) {
-            print('여기부분${snapshot.error}');
-            return Center(child: Text('데이터를 불러오는 중 에러가 발생했습니다.'));
-          } else if (snapshot.connectionState == ConnectionState.waiting) {
-            return _buildDiaryContainerUI();
-          } else if (snapshot.hasData) {
-            print(snapshot.data![1].small_emotion);
-            return Row(
-              children: [
-                Expanded(
-                  flex: 9,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: snapshot.data!.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DiaryDetailScreen(
-                                photoDetail: snapshot.data![index],
-                              ),
-                            ),
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Image.memory(
-                            snapshot.data![index].image!,
-                            width: 150,
-                            height: 150,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                Expanded(
-                    flex: 1,
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PhotoDetailScreen(),
-                          ),
-                        );
-                      },
-                      child: Text('더보기'),
-                    )),
-              ],
-            );
-          } else {
-            return Center(
-              child: Text('데이터가 없습니다.'),
-            ); // 데이터 없음 표시ƒ
-          }
-        },
-      ),
-    );
-  }
+  // DefaultSliverContainer _photoSliver(BuildContext context) {
+  //   return DefaultSliverContainer(
+  //     height: 200,
+  //     child: FutureBuilder<List<DiaryModel>>(
+  //       future: getPhoto(userId!, 'None', 'None', limit),
+  //       builder: (_, AsyncSnapshot<List<DiaryModel>> snapshot) {
+  //         if (snapshot.hasError) {
+  //           print('여기부분${snapshot.error}');
+  //           return Center(child: Text('데이터를 불러오는 중 에러가 발생했습니다.'));
+  //         } else if (snapshot.connectionState == ConnectionState.waiting) {
+  //           return _buildDiaryContainerUI();
+  //         } else if (snapshot.hasData) {
+  //           print(snapshot.data![1].small_emotion);
+  //           return Row(
+  //             children: [
+  //               Expanded(
+  //                 flex: 9,
+  //                 child: ListView.builder(
+  //                   scrollDirection: Axis.horizontal,
+  //                   physics: NeverScrollableScrollPhysics(),
+  //                   itemCount: snapshot.data!.length,
+  //                   itemBuilder: (BuildContext context, int index) {
+  //                     return GestureDetector(
+  //                       onTap: () {
+  //                         Navigator.push(
+  //                           context,
+  //                           MaterialPageRoute(
+  //                             builder: (context) => DiaryDetailScreen(
+  //                               photoDetail: snapshot.data![index],
+  //                             ),
+  //                           ),
+  //                         );
+  //                       },
+  //                       child: Padding(
+  //                         padding: const EdgeInsets.all(8.0),
+  //                         child: Image.memory(
+  //                           snapshot.data![index].image!,
+  //                           width: 150,
+  //                           height: 150,
+  //                           fit: BoxFit.cover,
+  //                         ),
+  //                       ),
+  //                     );
+  //                   },
+  //                 ),
+  //               ),
+  //               Expanded(
+  //                   flex: 1,
+  //                   child: TextButton(
+  //                     onPressed: () {
+  //                       Navigator.push(
+  //                         context,
+  //                         MaterialPageRoute(
+  //                           builder: (context) => PhotoDetailScreen(),
+  //                         ),
+  //                       );
+  //                     },
+  //                     child: Text('더보기'),
+  //                   )),
+  //             ],
+  //           );
+  //         } else {
+  //           return Center(
+  //             child: Text('데이터가 없습니다.'),
+  //           ); // 데이터 없음 표시ƒ
+  //         }
+  //       },
+  //     ),
+  //   );
+  // }
 
   DefaultSliverContainer _piechartSliver() {
     return DefaultSliverContainer(
@@ -389,37 +388,37 @@ class _StatisticScreenState extends State<StatisticScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () async {
-                      if (assistantController.text != null) {
-                        await sendToAssistant(
-                            userId!, assistantController.text);
-                        assistantController.text = '';
-                        assistantFocusNode.unfocus();
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: Text('전송 완료'),
-                              content: Text('메모가 전송되었습니다.'),
-                            );
-                          },
-                        );
-                        Future.delayed(Duration(seconds: 1), () {
-                          Navigator.of(context).pop();
-                        });
-                      } else {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: Text('전송 실패'),
-                              content: Text('입력하고 다시 시도해주세요.'),
-                            );
-                          },
-                        );
-                        Future.delayed(Duration(seconds: 1), () {
-                          Navigator.of(context).pop();
-                        });
-                      }
+                      // if (assistantController.text != null) {
+                      //   await sendToAssistant(
+                      //       userId!, assistantController.text);
+                      //   assistantController.text = '';
+                      //   assistantFocusNode.unfocus();
+                      //   showDialog(
+                      //     context: context,
+                      //     builder: (context) {
+                      //       return AlertDialog(
+                      //         title: Text('전송 완료'),
+                      //         content: Text('메모가 전송되었습니다.'),
+                      //       );
+                      //     },
+                      //   );
+                      //   Future.delayed(Duration(seconds: 1), () {
+                      //     Navigator.of(context).pop();
+                      //   });
+                      // } else {
+                      //   showDialog(
+                      //     context: context,
+                      //     builder: (context) {
+                      //       return AlertDialog(
+                      //         title: Text('전송 실패'),
+                      //         content: Text('입력하고 다시 시도해주세요.'),
+                      //       );
+                      //     },
+                      //   );
+                      //   Future.delayed(Duration(seconds: 1), () {
+                      //     Navigator.of(context).pop();
+                      //   });
+                      // }
                     },
                     child: Text('전송하기'),
                   ),
