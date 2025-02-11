@@ -51,6 +51,9 @@ android {
         versionName flutterVersionName
         buildConfigField "String", "GOOGLE_MAPS_API_KEY", "\"${localProperties.getProperty('GOOGLE_MAPS_API_KEY')}\""
         buildConfigField "String", "KAKAO_NATIVE_APP_KEY", "\"${localProperties.getProperty('KAKAO_NATIVE_APP_KEY')}\""
+        manifestPlaceholders = [
+            KAKAO_NATIVE_APP_KEY: localProperties.getProperty('KAKAO_NATIVE_APP_KEY')
+        ]
     }
 
     buildTypes {

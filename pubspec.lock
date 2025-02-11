@@ -234,10 +234,10 @@ packages:
     dependency: "direct dev"
     description:
       name: carousel_slider
-      sha256: "9c695cc963bf1d04a47bd6021f68befce8970bcd61d24938e1fb0918cf5d9c42"
+      sha256: "7b006ec356205054af5beaef62e2221160ea36b90fb70a35e4deacd49d0349ae"
       url: "https://pub.dev"
     source: hosted
-    version: "4.2.1"
+    version: "5.0.0"
   characters:
     dependency: transitive
     description:
@@ -422,6 +422,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.5"
+  etau:
+    dependency: transitive
+    description:
+      name: etau
+      sha256: "5859ee8438770e2887426dccf05bb55f2c78f20fe6db84043675155c2ebb9a7e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.14-alpha.5"
   fake_async:
     dependency: transitive
     description:
@@ -623,26 +631,26 @@ packages:
     dependency: "direct dev"
     description:
       name: flutter_sound
-      sha256: "1f40b26b92907a433afe877c927cd48f5a2e4d0f7188e5d39eb5756008aa51ab"
+      sha256: a4662bd1bb15a51569b908deb58a3e9ecc14c7080783487202d015644712f1ef
       url: "https://pub.dev"
     source: hosted
-    version: "9.6.0"
+    version: "9.23.1"
   flutter_sound_platform_interface:
     dependency: transitive
     description:
       name: flutter_sound_platform_interface
-      sha256: "2e218521d8187b9a4c65063ad9c79bfe88119531ff68047a2eaa6b027cb276bb"
+      sha256: "0ebd302180ddc91c993d4bb061f08d71a047ebb0f04b05befd2ee8de59ea947d"
       url: "https://pub.dev"
     source: hosted
-    version: "9.6.0"
+    version: "9.23.1"
   flutter_sound_web:
     dependency: transitive
     description:
       name: flutter_sound_web
-      sha256: "5013a15e4e69a4bdc8badd729130eef43c3305e30ba8e6933f863436ce969932"
+      sha256: "0891d977674be94d8c3f4759c6cd11e7f29a1ed29dc287b874a1393666ac831f"
       url: "https://pub.dev"
     source: hosted
-    version: "9.6.0"
+    version: "9.23.1"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -889,26 +897,26 @@ packages:
     dependency: transitive
     description:
       name: kakao_flutter_sdk_auth
-      sha256: "409c99c2bffe58f3be9078e6d4b25f64c7a789ef72110d6b8951e3e88e65e06a"
+      sha256: "686996c63c7e006ccf9a0bdfee5307465d7ae134d2f1ae2b4a06c597604689bc"
       url: "https://pub.dev"
     source: hosted
-    version: "1.9.5"
+    version: "1.9.6"
   kakao_flutter_sdk_common:
     dependency: transitive
     description:
       name: kakao_flutter_sdk_common
-      sha256: "1bbfd232830732f92d5837de6f9085c678059f42f075f80433ae2986fe8ea598"
+      sha256: "698d5f63d15438ad47af3baf0815fd30dfcacfa76640e96e5a18fc8504f25bde"
       url: "https://pub.dev"
     source: hosted
-    version: "1.9.5"
+    version: "1.9.6"
   kakao_flutter_sdk_user:
     dependency: "direct dev"
     description:
       name: kakao_flutter_sdk_user
-      sha256: "17037c3b0d7812b5438bcd6a58907a28f7603e8615c3f5ce2b3f1f38129df800"
+      sha256: f3692feefad530bcfcdd1b8cf685b0c2c3da4a6d28a7df7f57529e57b7040f1b
       url: "https://pub.dev"
     source: hosted
-    version: "1.9.5"
+    version: "1.9.6"
   leak_tracker:
     dependency: transitive
     description:
@@ -1634,6 +1642,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.9"
+  tau_web:
+    dependency: transitive
+    description:
+      name: tau_web
+      sha256: "81c8a0dc264f87db84678e5957dd1e4ccc015047fdea0f2cdd86d91c3c8a838e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.14-alpha.5"
   term_glyph:
     dependency: transitive
     description:
@@ -1830,10 +1846,10 @@ packages:
     dependency: transitive
     description:
       name: web
-      sha256: "97da13628db363c635202ad97068d47c5b8aa555808e7a9411963c533b449b27"
+      sha256: cd3543bd5798f6ad290ea73d210f423502e71900302dde696f8bff84bf89a1cb
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.1"
+    version: "1.1.0"
   web_socket:
     dependency: transitive
     description:

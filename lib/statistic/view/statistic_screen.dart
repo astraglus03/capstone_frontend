@@ -4,13 +4,9 @@ import 'package:capstone_frontend/common/const/const.dart';
 import 'package:capstone_frontend/home/diary_detail_screen.dart';
 import 'package:capstone_frontend/home/models/diary_model.dart';
 import 'package:capstone_frontend/home/models/month_emotion_resp_model.dart';
-import 'package:capstone_frontend/login/models/currentuser_model.dart';
-import 'package:capstone_frontend/login/social_api/auth_api.dart';
-import 'package:capstone_frontend/login/view/auth_page.dart';
-import 'package:capstone_frontend/login/social_api/kakao_login.dart';
-import 'package:capstone_frontend/login/repository/main_view_model.dart';
 import 'package:capstone_frontend/statistic/view/photoDetailScreen.dart';
 import 'package:capstone_frontend/statistic/view/pie_chart_case.dart';
+import 'package:capstone_frontend/user/social_api/auth_api.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
@@ -30,7 +26,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
   final FocusNode memoFocusNode = FocusNode();
   final FocusNode assistantFocusNode = FocusNode();
   final bool _isFocused = false; // 메모란에 포커스 여부
-  final viewmodel = MainViewModel(KakaoLogin());
+  // final viewmodel = MainViewModel(KakaoLogin());
   String? userId = UserManager().getUserId();
   final String limit = '2';
   final dio = Dio();
@@ -71,7 +67,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
                 const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 20),
             child: CustomScrollView(
               slivers: [
-                _diaryInfoSliver(),
+                // _diaryInfoSliver(),
                 _photoSliver(context),
                 // _emotionSliver(),
                 _piechartSliver(),
@@ -130,123 +126,123 @@ class _StatisticScreenState extends State<StatisticScreen> {
     memoFocusNode.unfocus(); // 포커스 해제
   }
 
-  Future<CurrentUser?> checkCurrentUser(String userId) async {
-    try {
-      final resp = await dio.get('$ip/userinfo/userinfo/$userId');
+  // Future<CurrentUser?> checkCurrentUser(String userId) async {
+  //   try {
+  //     final resp = await dio.get('$ip/userinfo/userinfo/$userId');
+  //
+  //     if (resp.statusCode == 200) {
+  //       return CurrentUser.fromJson(resp.data);
+  //       // print("사용자 ID: ${data['userId']}");
+  //       // print("닉네임: ${data['nickname']}");
+  //       // print("프로필 이미지 URL: ${data['profileImage']}");
+  //     } else {
+  //       throw Exception('서버에서 정보를 가져오는 데 실패했습니다.');
+  //     }
+  //   } catch (e) {
+  //     print('에러 발생: $e');
+  //   }
+  //   return null;
+  // }
 
-      if (resp.statusCode == 200) {
-        return CurrentUser.fromJson(resp.data);
-        // print("사용자 ID: ${data['userId']}");
-        // print("닉네임: ${data['nickname']}");
-        // print("프로필 이미지 URL: ${data['profileImage']}");
-      } else {
-        throw Exception('서버에서 정보를 가져오는 데 실패했습니다.');
-      }
-    } catch (e) {
-      print('에러 발생: $e');
-    }
-    return null;
-  }
-
-  DefaultSliverContainer _diaryInfoSliver() {
-    return DefaultSliverContainer(
-      height: 200,
-      child: FutureBuilder<CurrentUser?>(
-        future: checkCurrentUser(userId!),
-        builder: (_, AsyncSnapshot<CurrentUser?> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return _buildloginskeletonUI();
-          } else if (snapshot.hasError) {
-            return Center(child: Text('데이터를 불러오는 중 에러가 발생했습니다.'));
-          } else if (snapshot.hasData) {
-            return Stack(
-              children: [
-                Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(15.0),
-                      child: CircleAvatar(
-                        radius: 40,
-                        backgroundImage: NetworkImage(snapshot.data!.imageUrl),
-                        backgroundColor: Colors.grey[200],
-                      ),
-                    ),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                snapshot.data!.nickname,
-                                style: TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.bold),
-                              ),
-                              SizedBox(width: 10),
-                              TextButton(
-                                onPressed: () async {
-                                  await viewmodel.logout();
-                                  setState(() {
-                                    userId = '';
-                                    Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => AuthPage()));
-                                  });
-                                },
-                                child: Text('로그아웃'),
-                                style: TextButton.styleFrom(
-                                  backgroundColor: Colors.blueGrey,
-                                  foregroundColor: Colors.white,
-                                  minimumSize: Size(30, 10),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 15),
-                          TextFormField(
-                            controller: memoController,
-                            focusNode: memoFocusNode,
-                            decoration: InputDecoration(
-                              labelText: '메모',
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 12),
-                              isDense: true,
-                            ),
-                            style: TextStyle(fontSize: 14),
-                          ),
-                          if (_isFocused)
-                            ElevatedButton(
-                              onPressed: _saveText,
-                              child: Text('저장하기'),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                Positioned(
-                  right: 5,
-                  child: IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      memoFocusNode.requestFocus();
-                    },
-                  ),
-                ),
-              ],
-            );
-          } else {
-            return Center(
-              child: Text('데이터가 없습니다.'),
-            );
-          }
-        },
-      ),
-    );
-  }
+  // DefaultSliverContainer _diaryInfoSliver() {
+  //   return DefaultSliverContainer(
+  //     height: 200,
+  //     child: FutureBuilder<CurrentUser?>(
+  //       future: checkCurrentUser(userId!),
+  //       builder: (_, AsyncSnapshot<CurrentUser?> snapshot) {
+  //         if (snapshot.connectionState == ConnectionState.waiting) {
+  //           return _buildloginskeletonUI();
+  //         } else if (snapshot.hasError) {
+  //           return Center(child: Text('데이터를 불러오는 중 에러가 발생했습니다.'));
+  //         } else if (snapshot.hasData) {
+  //           return Stack(
+  //             children: [
+  //               Row(
+  //                 children: [
+  //                   Padding(
+  //                     padding: const EdgeInsets.all(15.0),
+  //                     child: CircleAvatar(
+  //                       radius: 40,
+  //                       backgroundImage: NetworkImage(snapshot.data!.imageUrl),
+  //                       backgroundColor: Colors.grey[200],
+  //                     ),
+  //                   ),
+  //                   Expanded(
+  //                     child: Column(
+  //                       mainAxisAlignment: MainAxisAlignment.center,
+  //                       crossAxisAlignment: CrossAxisAlignment.start,
+  //                       children: [
+  //                         Row(
+  //                           children: [
+  //                             Text(
+  //                               snapshot.data!.nickname,
+  //                               style: TextStyle(
+  //                                   fontSize: 20, fontWeight: FontWeight.bold),
+  //                             ),
+  //                             SizedBox(width: 10),
+  //                             TextButton(
+  //                               onPressed: () async {
+  //                                 await viewmodel.logout();
+  //                                 setState(() {
+  //                                   // userId = '';
+  //                                   // Navigator.pushReplacement(
+  //                                   //     context,
+  //                                   //     MaterialPageRoute(
+  //                                   //         builder: (context) => AuthPage()));
+  //                                 });
+  //                               },
+  //                               child: Text('로그아웃'),
+  //                               style: TextButton.styleFrom(
+  //                                 backgroundColor: Colors.blueGrey,
+  //                                 foregroundColor: Colors.white,
+  //                                 minimumSize: Size(30, 10),
+  //                               ),
+  //                             ),
+  //                           ],
+  //                         ),
+  //                         SizedBox(height: 15),
+  //                         TextFormField(
+  //                           controller: memoController,
+  //                           focusNode: memoFocusNode,
+  //                           decoration: InputDecoration(
+  //                             labelText: '메모',
+  //                             border: OutlineInputBorder(),
+  //                             contentPadding: EdgeInsets.symmetric(
+  //                                 vertical: 8, horizontal: 12),
+  //                             isDense: true,
+  //                           ),
+  //                           style: TextStyle(fontSize: 14),
+  //                         ),
+  //                         if (_isFocused)
+  //                           ElevatedButton(
+  //                             onPressed: _saveText,
+  //                             child: Text('저장하기'),
+  //                           ),
+  //                       ],
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //               Positioned(
+  //                 right: 5,
+  //                 child: IconButton(
+  //                   icon: const Icon(Icons.edit),
+  //                   onPressed: () {
+  //                     memoFocusNode.requestFocus();
+  //                   },
+  //                 ),
+  //               ),
+  //             ],
+  //           );
+  //         } else {
+  //           return Center(
+  //             child: Text('데이터가 없습니다.'),
+  //           );
+  //         }
+  //       },
+  //     ),
+  //   );
+  // }
 
   Future<List<DiaryModel>> getPhoto(
       String userId, String date, String month, String limit) async {

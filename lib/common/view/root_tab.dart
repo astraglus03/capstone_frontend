@@ -5,7 +5,7 @@ import 'package:capstone_frontend/statistic/view/statistic_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class RootTab extends StatefulWidget {
   const RootTab({super.key});
@@ -30,7 +30,7 @@ class _RootTabState extends State<RootTab> {
   final List<Widget> _MainWidgets = <Widget>[
     HomeScreen(),
     Calendar(),
-    ChangeNotifierProvider(create: (context) => EmotionManager(), child: StatisticScreen()),
+    StatisticScreen(),
   ];
 
   int _index = 0;

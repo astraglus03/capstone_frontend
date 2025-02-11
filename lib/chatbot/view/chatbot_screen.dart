@@ -5,9 +5,8 @@ import 'package:capstone_frontend/chatbot/models/chat_resp_model.dart';
 import 'package:capstone_frontend/chatbot/models/chat_send_model.dart';
 import 'package:capstone_frontend/common/const/const.dart';
 import 'package:capstone_frontend/common/view/root_tab.dart';
-import 'package:capstone_frontend/login/social_api/auth_api.dart';
 import 'package:capstone_frontend/chatbot/models/chat_threadid_model.dart';
-import 'package:capstone_frontend/login/models/currentuser_model.dart';
+import 'package:capstone_frontend/user/social_api/auth_api.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -82,7 +81,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           );
         },
       );
-      getCurrentUser(UserManager().getUserId().toString());
+      // getCurrentUser(UserManager().getUserId().toString());
       initializeChat();
     });
     audioPath = '';
@@ -101,31 +100,31 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     }
   }
 
-  Future<CurrentUser?> getCurrentUser(String userId) async {
-    try {
-      final resp = await dio.get('$ip/userinfo/userinfo/$userId');
-
-      if (resp.statusCode == 200) {
-        setState(() {
-          weights = resp.data['weight'];
-          _currentUser = ChatUser(
-            id: '1',
-            firstName: resp.data['nickname'].substring(0, 1),
-            lastName: resp.data['nickname'].substring(1),
-            profileImage: resp.data['profileImage'],
-          );
-        });
-        return CurrentUser.fromJson(resp.data);
-        // print("사용자 ID: ${data['userId']}");
-        // print("닉네임: ${data['nickname']}");
-        // print("프로필 이미지 URL: ${data['profileImage']}");
-      } else {
-        throw Exception('서버에서 정보를 가져오는 데 실패했습니다.');
-      }
-    } catch (e) {
-      print('에러 발생: $e');
-    }
-  }
+  // Future<CurrentUser?> getCurrentUser(String userId) async {
+  //   try {
+  //     final resp = await dio.get('$ip/userinfo/userinfo/$userId');
+  //
+  //     if (resp.statusCode == 200) {
+  //       setState(() {
+  //         weights = resp.data['weight'];
+  //         _currentUser = ChatUser(
+  //           id: '1',
+  //           firstName: resp.data['nickname'].substring(0, 1),
+  //           lastName: resp.data['nickname'].substring(1),
+  //           profileImage: resp.data['profileImage'],
+  //         );
+  //       });
+  //       return CurrentUser.fromJson(resp.data);
+  //       // print("사용자 ID: ${data['userId']}");
+  //       // print("닉네임: ${data['nickname']}");
+  //       // print("프로필 이미지 URL: ${data['profileImage']}");
+  //     } else {
+  //       throw Exception('서버에서 정보를 가져오는 데 실패했습니다.');
+  //     }
+  //   } catch (e) {
+  //     print('에러 발생: $e');
+  //   }
+  // }
 
   @override
   void dispose() {

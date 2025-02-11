@@ -1,7 +1,7 @@
 import 'package:capstone_frontend/common/const/const.dart';
 import 'package:capstone_frontend/home/diary_detail_screen.dart';
 import 'package:capstone_frontend/home/models/diary_model.dart';
-import 'package:capstone_frontend/login/social_api/auth_api.dart';
+import 'package:capstone_frontend/user/social_api/auth_api.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';

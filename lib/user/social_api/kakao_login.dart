@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:capstone_frontend/common/const/const.dart';
-import 'package:capstone_frontend/login/social_api/auth_api.dart';
-import 'package:capstone_frontend/login/social_api/social_login.dart';
+import 'package:capstone_frontend/user/social_api/auth_api.dart';
+import 'package:capstone_frontend/user/social_api/social_login.dart';
 import 'package:dio/dio.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
