@@ -1,6 +1,6 @@
 import 'package:capstone_frontend/common/const/api_keys.dart';
 import 'package:capstone_frontend/common/view_models/go_router.dart';
-import 'package:capstone_frontend/register/view/sample_audio.dart';
+import 'package:capstone_frontend/register/view/sample_audio_screen.dart';
 import 'package:capstone_frontend/user/view/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';

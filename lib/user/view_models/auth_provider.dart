@@ -1,5 +1,8 @@
 import 'package:capstone_frontend/common/view/root_tab.dart';
 import 'package:capstone_frontend/common/view/splash_screen.dart';
+import 'package:capstone_frontend/register/models/voice_model.dart';
+import 'package:capstone_frontend/register/view/sample_audio_screen.dart';
+import 'package:capstone_frontend/register/view_models/voice_provider.dart';
 import 'package:capstone_frontend/user/models/user_model.dart';
 import 'package:capstone_frontend/user/view/login_screen.dart';
 import 'package:capstone_frontend/user/view_models/user_me_provider.dart';
@@ -34,6 +37,11 @@ class AuthProvider extends ChangeNotifier {
       path: '/login',
       name: LoginScreen.routeName,
       builder: (_, __) => LoginScreen(),
+    ),
+    GoRoute(
+      path: '/voice',
+      name: SampleAudioScreen.routeName,
+      builder: (_, state) => SampleAudioScreen(),
     ),
     GoRoute(
       path: '/',
@@ -71,8 +79,10 @@ class AuthProvider extends ChangeNotifier {
 
   String? redirectLogic(BuildContext context, GoRouterState state) {
     final UserModelBase? user = ref.read(userMeProvider);
+    final voice = ref.read(voiceProvider);
 
     final logginIn = state.matchedLocation == '/login';
+    final isSampleAudio = state.matchedLocation == '/voice';
 
     // 유저 정보가 없는데 로그인중이면 그대로 아니면 로그인페이지로
     if (user == null) {
@@ -81,9 +91,17 @@ class AuthProvider extends ChangeNotifier {
 
     //user가 Null이 아님
     // 1) UserModel인 상태
-    // 로그인중이거나 현재 위치가 splashscreen이면 홈으로 이동
     if (user is UserModel) {
-      return logginIn || state.matchedLocation == '/splash' ? '/' : null;
+      // 로그인 페이지나 스플래시 화면에 있을 때
+      if (logginIn || state.matchedLocation == '/splash') {
+        // 음성 등록이 완료되지 않았다면 음성 등록 화면으로
+        if (!voice.isAllCompleted && !isSampleAudio) {
+          return '/voice';
+        }
+        // 음성 등록이 완료되었다면 홈으로
+        return '/';
+      }
+      return null;
     }
 
     // 2) UserModel Error

@@ -2,7 +2,6 @@ import 'package:capstone_frontend/common/const/const.dart';
 import 'package:capstone_frontend/home/models/diary_model.dart';
 import 'package:capstone_frontend/home/models/month_emotion_resp_model.dart';
 import 'package:capstone_frontend/statistic/models/schedule_resp_model.dart';
-import 'package:capstone_frontend/user/social_api/auth_api.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +23,7 @@ class _CalendarState extends State<Calendar> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
-  final userId = UserManager().getUserId();
+  // final userId = UserManager().getUserId();
   late Future<List<DiaryModel>> changeEmotion;
   String feedback ='';
   Future<List<ScheduleRespModel>> respSchedule(String userId) {
@@ -73,44 +72,44 @@ class _CalendarState extends State<Calendar> {
     }
   }
 
-  void getSchedules() async {
-    List<ScheduleRespModel> schedules = await respSchedule(userId!);
-    setState(() {
-      for (var i in schedules) {
-        DateTime date = DateTime.parse(i.date);
+  // void getSchedules() async {
+  //   List<ScheduleRespModel> schedules = await respSchedule(userId!);
+  //   setState(() {
+  //     for (var i in schedules) {
+  //       DateTime date = DateTime.parse(i.date);
+  //
+  //       if (kEvents.containsKey(date)) {
+  //         List<Event> existingEvents = kEvents[date]!;
+  //         bool isDuplicate = existingEvents.any((e) => e.title == i.content);
+  //
+  //         if (!isDuplicate) {
+  //           existingEvents.add(Event(i.date, i.content));
+  //         }
+  //       } else {
+  //         kEvents[date] = [Event(i.date, i.content)];
+  //       }
+  //     }
+  //   });
+  // }
 
-        if (kEvents.containsKey(date)) {
-          List<Event> existingEvents = kEvents[date]!;
-          bool isDuplicate = existingEvents.any((e) => e.title == i.content);
-
-          if (!isDuplicate) {
-            existingEvents.add(Event(i.date, i.content));
-          }
-        } else {
-          kEvents[date] = [Event(i.date, i.content)];
-        }
-      }
-    });
-  }
-
-  void getMonthFeedback() async {
-    List<DiaryMonthModel> dm = await sendDiaryToBackend(userId!, DateFormat('yyyy-MM').format(_focusedDay));
-    setState(() {
-      if (dm[0].monthFeedback != feedback) {
-        feedback = dm[0].monthFeedback;
-        print('지금 변경됨');
-      }
-    });
-  }
+  // void getMonthFeedback() async {
+  //   List<DiaryMonthModel> dm = await sendDiaryToBackend(userId!, DateFormat('yyyy-MM').format(_focusedDay));
+  //   setState(() {
+  //     if (dm[0].monthFeedback != feedback) {
+  //       feedback = dm[0].monthFeedback;
+  //       print('지금 변경됨');
+  //     }
+  //   });
+  // }
 
   @override
   void initState() {
     super.initState();
-    getSchedules();
-    changeEmotion = respEmotions(userId!);
+    // getSchedules();
+    // changeEmotion = respEmotions(userId!);
     _selectedDay = _focusedDay;
     _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
-    getMonthFeedback();
+    // getMonthFeedback();
   }
 
   @override
@@ -225,7 +224,7 @@ class _CalendarState extends State<Calendar> {
                   },
                   onPageChanged: (focusedDay) {
                     _focusedDay = focusedDay;
-                    getMonthFeedback();
+                    // getMonthFeedback();
                   },
                   rowHeight: 70,
                   // daysOfWeekHeight: 30,
