@@ -1,6 +1,5 @@
 import 'package:capstone_frontend/calendar/view/calendar.dart';
-import 'package:capstone_frontend/home/emotion_manager.dart';
-import 'package:capstone_frontend/home/home_screen.dart';
+import 'package:capstone_frontend/home/view/home_screen.dart';
 import 'package:capstone_frontend/statistic/view/statistic_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

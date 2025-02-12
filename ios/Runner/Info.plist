@@ -66,5 +66,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIAppFonts</key>
+    <array>
+        <string>KCC-Ganpan.ttf</string>
+    </array>
 </dict>
 </plist>
