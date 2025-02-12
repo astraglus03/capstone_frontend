@@ -269,7 +269,7 @@ class _CalendarState extends State<Calendar> {
                       for (var i in data) {
                         if (DateFormat('yyyy-MM-dd').format(i.date!) ==
                             DateFormat('yyyy-MM-dd').format(day)) {
-                          imageUrl = getEmotionRoute(i.changeEmotion![0]);
+                          // imageUrl = getEmotionRoute(i.changeEmotion![0]);
                           break;
                         }
                       }

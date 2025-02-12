@@ -1,5 +1,6 @@
 import 'package:capstone_frontend/common/view/root_tab.dart';
 import 'package:capstone_frontend/common/view/splash_screen.dart';
+import 'package:capstone_frontend/home/view/diary_detail_screen.dart';
 import 'package:capstone_frontend/register/models/voice_model.dart';
 import 'package:capstone_frontend/register/view/sample_audio_screen.dart';
 import 'package:capstone_frontend/register/view_models/voice_provider.dart';
@@ -48,11 +49,11 @@ class AuthProvider extends ChangeNotifier {
       name: RootTab.routeName,
       builder: (context, state) => RootTab(),
       routes: [
-        // GoRoute(
-        //   path: 'terms',
-        //   name: TermsScreen.routeName,
-        //   builder: (_, state) => TermsScreen(),
-        // ),
+        GoRoute(
+          path: 'diaryDetail/:did',
+          name: DiaryDetailScreen.routeName,
+          builder: (_, state) => DiaryDetailScreen(id: state.pathParameters['did']!),
+        ),
       ],
     ),
     // GoRoute(

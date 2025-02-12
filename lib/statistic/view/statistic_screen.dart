@@ -1,7 +1,7 @@
 import 'package:capstone_frontend/calendar/view/calendar.dart';
 import 'package:capstone_frontend/common/component/default_sliver_padding.dart';
 import 'package:capstone_frontend/common/const/const.dart';
-import 'package:capstone_frontend/home/diary_detail_screen.dart';
+import 'package:capstone_frontend/home/view/diary_detail_screen.dart';
 import 'package:capstone_frontend/home/models/diary_model.dart';
 import 'package:capstone_frontend/home/models/month_emotion_resp_model.dart';
 import 'package:capstone_frontend/statistic/view/photoDetailScreen.dart';
