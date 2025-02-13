@@ -1,36 +1,44 @@
-import 'dart:convert';
-import 'dart:typed_data';
+import 'package:capstone_frontend/home/models/diary_model.dart';
+import 'package:json_annotation/json_annotation.dart';
 
-class DiaryDetailModel{
-  final String? content;
-  final List<String>? textEmotion;
-  final List<String>? speechEmotion;
-  final String? charCount;
-  final String? userId;
-  final DateTime? date;
-  final Uint8List? image;
+part 'diary_detail_model.g.dart';
+
+@JsonSerializable()
+class DiaryDetailModel extends DiaryModel {
+  final List<EmotionChange>? emotionChanges;  // 감정 변화 기록
+  final String? overallFeedback;        // 전체 감정 변화에 대한 피드백
 
   DiaryDetailModel({
-     this.content,
-     this.textEmotion,
-     this.speechEmotion,
-     this.charCount,
-     this.userId,
-     this.date,
-     this.image,
+    super.id,
+    super.date,
+    super.image,
+    super.content,
+    super.feedback,
+    super.absEmotion,
+    this.emotionChanges,
+    this.overallFeedback,
   });
 
-  factory DiaryDetailModel.fromJson(Map<String, dynamic> json) {
-    String base64String = json['image'];
-    Uint8List image = base64Decode(base64String);
-    return DiaryDetailModel(
-      userId: json['userId'],
-      date: DateTime.parse(json['date']),
-      image: image,
-      content: json['content']?? '',
-      textEmotion: List<String>.from(json['textEmotion']),
-      speechEmotion: List<String>.from(json['speechEmotion']),
-      charCount: json['charCount'] ?? '',
-    );
-  }
+  factory DiaryDetailModel.fromJson(Map<String, dynamic> json) => _$DiaryDetailModelFromJson(json);
+  
+  @override
+  Map<String, dynamic> toJson() => _$DiaryDetailModelToJson(this);
+}
+
+@JsonSerializable()
+class EmotionChange {
+  final String fromEmotion;
+  final String toEmotion;
+  final String changeComment;
+  final int index;
+
+  EmotionChange({
+    required this.fromEmotion,
+    required this.toEmotion,
+    required this.changeComment,
+    required this.index,
+  });
+
+  factory EmotionChange.fromJson(Map<String, dynamic> json) => _$EmotionChangeFromJson(json);
+  Map<String, dynamic> toJson() => _$EmotionChangeToJson(this);
 }
