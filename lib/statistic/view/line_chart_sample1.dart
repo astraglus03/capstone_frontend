@@ -412,23 +412,20 @@ class LineChartSample1 extends StatefulWidget {
   final List<String> voiceEmo;
   final List<String> absEmo;
 
-  const LineChartSample1({super.key,
-    required this.chatCount, required this.textEmo,required this.voiceEmo,required this.absEmo}); // Constructor 수정
+  const LineChartSample1({
+    super.key,
+    required this.chatCount,
+    required this.textEmo,
+    required this.voiceEmo,
+    required this.absEmo,
+  });
 
   @override
   State<LineChartSample1> createState() => LineChartSample1State();
 }
 
 class LineChartSample1State extends State<LineChartSample1> {
-  late bool isShowingMainData;
-  late GraphType currentGraphType;
-
-  @override
-  void initState() {
-    super.initState();
-    isShowingMainData = true;
-    currentGraphType = GraphType.abs;
-  }
+  GraphType currentGraphType = GraphType.abs;
 
   @override
   Widget build(BuildContext context) {
@@ -440,56 +437,20 @@ class LineChartSample1State extends State<LineChartSample1> {
           ButtonBar(
             alignment: MainAxisAlignment.center,
             children: <Widget>[
-              Container(
-                width: 48, // 원 크기 지정
-                height: 48, // 원 크기 지정
-                decoration: BoxDecoration(
-                  color: currentGraphType == GraphType.abs ? Color(0xFFC9F5FF) : Colors.transparent,
-                  shape: BoxShape.circle, // 원형 배경
-                ),
-                child: IconButton(
-                  icon: Icon(Icons.auto_graph_rounded, size: 24),
-                  onPressed: () {
-                    setState(() {
-                      currentGraphType = GraphType.abs;
-                    });
-                  },
-                  tooltip: '텍스트 감정',
-                ),
+              _buildGraphButton(
+                GraphType.abs,
+                Icons.auto_graph_rounded,
+                '통합 감정',
               ),
-              Container(
-                width: 48, // 원 크기 지정
-                height: 48, // 원 크기 지정
-                decoration: BoxDecoration(
-                  color: currentGraphType == GraphType.text ? Color(0xFFC9F5FF) : Colors.transparent,
-                  shape: BoxShape.circle, // 원형 배경
-                ),
-                child: IconButton(
-                  icon: Icon(Icons.text_fields_rounded, size: 24),
-                  onPressed: () {
-                    setState(() {
-                      currentGraphType = GraphType.text;
-                    });
-                  },
-                  tooltip: '음성 감정',
-                ),
+              _buildGraphButton(
+                GraphType.text,
+                Icons.text_fields_rounded,
+                '텍스트 감정',
               ),
-              Container(
-                width: 48, // 원 크기 지정
-                height: 48, // 원 크기 지정
-                decoration: BoxDecoration(
-                  color: currentGraphType == GraphType.voice ? Color(0xFFC9F5FF) : Colors.transparent,
-                  shape: BoxShape.circle, // 원형 배경
-                ),
-                child: IconButton(
-                  icon: Icon(Icons.keyboard_voice_rounded, size: 24),
-                  onPressed: () {
-                    setState(() {
-                      currentGraphType = GraphType.voice;
-                    });
-                  },
-                  tooltip: '통합 감정',
-                ),
+              _buildGraphButton(
+                GraphType.voice,
+                Icons.keyboard_voice_rounded,
+                '음성 감정',
               ),
             ],
           ),
@@ -507,6 +468,22 @@ class LineChartSample1State extends State<LineChartSample1> {
           ),
           const SizedBox(height: 10),
         ],
+      ),
+    );
+  }
+
+  Widget _buildGraphButton(GraphType type, IconData icon, String tooltip) {
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: currentGraphType == type ? const Color(0xFFC9F5FF) : Colors.transparent,
+        shape: BoxShape.circle,
+      ),
+      child: IconButton(
+        icon: Icon(icon, size: 24),
+        onPressed: () => setState(() => currentGraphType = type),
+        tooltip: tooltip,
       ),
     );
   }

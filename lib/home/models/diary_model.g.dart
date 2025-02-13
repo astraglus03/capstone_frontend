@@ -15,7 +15,7 @@ DiaryModel _$DiaryModelFromJson(Map<String, dynamic> json) => DiaryModel(
       absEmotion: (json['absEmotion'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),
-      image: DiaryModel._imageFromJson(json['image'] as String?),
+      image: DiaryModel.imageFromJson(json['image'] as String?),
     );
 
 Map<String, dynamic> _$DiaryModelToJson(DiaryModel instance) =>
@@ -25,6 +25,6 @@ Map<String, dynamic> _$DiaryModelToJson(DiaryModel instance) =>
       'content': instance.content,
       'feedback': instance.feedback,
       'absEmotion': instance.absEmotion,
-      if (DiaryModel._imageToJson(instance.image) case final value?)
+      if (DiaryModel.imageToJson(instance.image) case final value?)
         'image': value,
     };

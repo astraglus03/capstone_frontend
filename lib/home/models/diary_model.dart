@@ -13,8 +13,8 @@ class DiaryModel {
   final List<String>? absEmotion;  // 감정 리스트
   
   @JsonKey(
-    fromJson: _imageFromJson,
-    toJson: _imageToJson,
+    fromJson: imageFromJson,
+    toJson: imageToJson,
     includeIfNull: false,
   )
   final Uint8List? image;
@@ -31,7 +31,7 @@ class DiaryModel {
   factory DiaryModel.fromJson(Map<String, dynamic> json) => _$DiaryModelFromJson(json);
   Map<String, dynamic> toJson() => _$DiaryModelToJson(this);
 
-  static Uint8List? _imageFromJson(String? json) {
+  static Uint8List? imageFromJson(String? json) {
     if (json == null) return null;
     try {
       return base64Decode(json);
@@ -41,7 +41,7 @@ class DiaryModel {
     }
   }
 
-  static String? _imageToJson(Uint8List? image) {
+  static String? imageToJson(Uint8List? image) {
     if (image == null) return null;
     try {
       return base64Encode(image);
